@@ -15,25 +15,24 @@ const style = {
 const nodeSource = {
 	beginDrag(props) {
         console.log("Dragging ...");
-		return props;
+        return props;
 	},
     endDrag(props, monitor) {
-		const didDrop = monitor.didDrop();
+        const didDrop = monitor.didDrop();
         const droppedTo = monitor.getDropResult();
         // preventing a node to be dropped inside itself
         if(droppedTo && droppedTo.node.id != props.node.id)
-		      props.addNode(props, droppedTo);
-
-	},
+        props.addNode(props, droppedTo);
+    },
 }
 
 const nodeTarget = {
 	hover(props, monitor) {
-		const { id: draggedId } = monitor.getItem();
-		const { id: overId } = props;
+        const { id: draggedId } = monitor.getItem();
+        const { id: overId } = props;
         // TODO Do some stuff when on hover
 
-	},
+    },
     drop(props, monitor, component) {
         // monitor.didDrop() checkes if the event was handled by a nested (child) node.
         if(!monitor.didDrop()){
@@ -44,6 +43,7 @@ const nodeTarget = {
     },
 };
 
+
 @DropTarget(ItemTypes.NODE, nodeTarget, (connect, monitor) => ({
     connectDropTarget: connect.dropTarget(),
     isHovering: monitor.isOver({ shallow: true })
@@ -53,10 +53,10 @@ const nodeTarget = {
 	isDragging: monitor.isDragging(),
 }))
 class Node extends Component {
-	static propTypes = {
-		connectDragSource: PropTypes.func.isRequired,
+    static propTypes = {
+        connectDragSource: PropTypes.func.isRequired,
         connectDropTarget: PropTypes.func.isRequired,
-		isDragging: PropTypes.bool.isRequired,
+        isDragging: PropTypes.bool.isRequired,
         testToggle: PropTypes.func.isRequired,
         node: PropTypes.any.isRequired,
         children: PropTypes.node,
@@ -66,11 +66,11 @@ class Node extends Component {
 	}
 
 	render() {
-		const { isDragging, connectDragSource, connectDropTarget, testToggle, node, children, isHovering } = this.props;
-		const opacity = isDragging ? 0.4 : 1;
+        const { isDragging, connectDragSource, connectDropTarget, testToggle, node, children, isHovering } = this.props;
+        const opacity = isDragging ? 0.4 : 1;
         const color = isHovering && !isDragging ? 'red' : 'black';
 
-		return connectDragSource(connectDropTarget(
+        return connectDragSource(connectDropTarget(
             <li
                 key={node.id}
                 style={{
@@ -90,18 +90,18 @@ class Node extends Component {
                 </ul>
 
             </li>,
-		));
+        ));
 	}
 }
 
 export default class StatefulNode extends Component {
-	constructor(props) {
-		super(props)
-		this.state = {
-			node: props.node,
+    constructor(props) {
+        super(props)
+        this.state = {
+            node: props.node,
             addNode: props.addNode
-		}
-	}
+        }
+    }
 
 	render() {
 		return (
