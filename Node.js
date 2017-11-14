@@ -1,7 +1,8 @@
-import React, { Component } from 'react'
-import PropTypes from 'prop-types'
-import { DragSource, DropTarget } from 'react-dnd'
-import ItemTypes from './ItemTypes'
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { DragSource, DropTarget } from 'react-dnd';
+import ItemTypes from './ItemTypes';
+import FontAwesome from 'react-fontawesome';
 
 const style = {
 	// border: '1px dashed gray',
@@ -27,6 +28,14 @@ const nodeSource = {
 }
 
 const nodeTarget = {
+	canDrop(props, monitor){
+		// You cannot drop into a search node
+		if(props.node.type == 'search'){
+			return false;
+		}else{
+			return true;
+		}
+	},
 	hover(props, monitor) {
         const { id: draggedId } = monitor.getItem();
         const { id: overId } = props;
@@ -35,7 +44,8 @@ const nodeTarget = {
     },
     drop(props, monitor, component) {
         // monitor.didDrop() checkes if the event was handled by a nested (child) node.
-        if(!monitor.didDrop()){
+		// monitor.isOver checks if the event is on the current droptarget not a nested one
+        if(!monitor.didDrop() && monitor.isOver({ shallow: true })){
             // these (props which is the node that I dropped into) are available to the nodesource as monitor.getDropResult()
             return props;
         }
@@ -68,7 +78,7 @@ class Node extends Component {
 	render() {
         const { isDragging, connectDragSource, connectDropTarget, testToggle, node, children, isHovering } = this.props;
         const opacity = isDragging ? 0.4 : 1;
-        const color = isHovering && !isDragging ? 'red' : 'black';
+        const color = isHovering && !isDragging && node.type !=='search' ? 'red' : 'black';
 
         return connectDragSource(connectDropTarget(
             <li
@@ -84,7 +94,11 @@ class Node extends Component {
                     type="checkbox"
                     onChange={testToggle}
                 />
-                <small  style={{color}}> {node.title + " -- ID " + node.id} </small>
+				<FontAwesome
+			        name={node.type}
+			        style={{ textShadow: '0 1px 0 rgba(0, 0, 0, 0.1)' }}
+			      />
+                <small  style={{color}}> {node.title } </small>
                 <ul  style={{ listStyleType: 'none'}}>
                     {children}
                 </ul>
