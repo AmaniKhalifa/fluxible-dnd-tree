@@ -2,9 +2,16 @@
 
 ### What is this repository for? ###
 
-* Drag and Drop Tree using React dnd library
+* Drag and Drop Tree using [React dnd library](http://react-dnd.github.io/)
 
 ### How do I get set up? ###
 
 * run npm install 
-* Develope with PATH=./node_modules/.bin:$PATH && webpack-dev-server --hot --inline
+* build bundles with
+	```sh
+	npm run build 
+	```
+* Develope with
+	```sh
+	npm run develope 
+	```
