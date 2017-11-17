@@ -22,8 +22,10 @@ const nodeSource = {
         const didDrop = monitor.didDrop();
         const droppedTo = monitor.getDropResult();
         // preventing a node to be dropped inside itself
-        if(droppedTo && droppedTo.node.id != props.node.id)
-        props.addNode(props, droppedTo);
+        if(droppedTo.node && droppedTo.node.id != props.node.id){
+			props.addNode(props, droppedTo);
+
+		}
     },
 }
 
@@ -31,8 +33,17 @@ const nodeTarget = {
 	canDrop(props, monitor){
 		// You cannot drop into a search node
 		if(props.node.type == 'search'){
+			console.log("Can't drop");
+			console.log("Did Drop ", monitor.didDrop());
+			console.log("Is over ", monitor.isOver({ shallow: true }));
+			console.log("-------------------------");
 			return false;
 		}else{
+			console.log("************");
+			console.log("Can drop");
+			console.log("Did Drop ", monitor.didDrop());
+			console.log("Is over ", monitor.isOver({ shallow: true }));
+			console.log("************");
 			return true;
 		}
 	},
@@ -45,9 +56,10 @@ const nodeTarget = {
     drop(props, monitor, component) {
         // monitor.didDrop() checkes if the event was handled by a nested (child) node.
 		// monitor.isOver checks if the event is on the current droptarget not a nested one
-        if(!monitor.didDrop() && monitor.isOver({ shallow: true })){
+        if( (monitor.canDrop() && !monitor.didDrop() && !monitor.isOver({ shallow: true }) ) || (!monitor.didDrop() && monitor.isOver({ shallow: true })) ){
             // these (props which is the node that I dropped into) are available to the nodesource as monitor.getDropResult()
-            return props;
+			console.log("RETURNING PROPS ", props.node.title);
+			return props;
         }
 
     },
@@ -56,11 +68,12 @@ const nodeTarget = {
 
 @DropTarget(ItemTypes.NODE, nodeTarget, (connect, monitor) => ({
     connectDropTarget: connect.dropTarget(),
-    isHovering: monitor.isOver({ shallow: true })
+    isHovering: monitor.isOver({ shallow: true }),
+	isHoveringOnSearchChild: monitor.canDrop() && !monitor.didDrop() && monitor.isOver({child: true})
 }))
 @DragSource(ItemTypes.NODE, nodeSource, (connect, monitor) => ({
 	connectDragSource: connect.dragSource(),
-	isDragging: monitor.isDragging(),
+	isDragging: monitor.isDragging()
 }))
 class Node extends Component {
     static propTypes = {
@@ -71,15 +84,21 @@ class Node extends Component {
         node: PropTypes.any.isRequired,
         children: PropTypes.node,
         addNode: PropTypes.func.isRequired,
-        isHovering: PropTypes.bool.isRequired
+        isHovering: PropTypes.bool.isRequired,
+		isHoveringOnSearchChild: PropTypes.bool.isRequired
 
 	}
 
 	render() {
-        const { isDragging, connectDragSource, connectDropTarget, testToggle, node, children, isHovering } = this.props;
+        const { isDragging, connectDragSource, connectDropTarget, testToggle, node, children, isHovering, isHoveringOnSearchChild } = this.props;
         const opacity = isDragging ? 0.4 : 1;
-        const color = isHovering && !isDragging && node.type !=='search' ? 'red' : 'black';
-
+		let color = 'black';
+		// This is for testing purposes
+		if(isHoveringOnSearchChild){
+			color = 'blue';
+		}else{
+			color = (isHovering && !isDragging && node.type !=='search') || isHoveringOnSearchChild ? 'red' : 'black';
+		}
         return connectDragSource(connectDropTarget(
             <li
                 key={node.id}
@@ -110,18 +129,14 @@ class Node extends Component {
 
 export default class StatefulNode extends Component {
     constructor(props) {
-        super(props)
-        this.state = {
-            node: props.node,
-            addNode: props.addNode
-        }
+        super(props);
     }
 
 	render() {
 		return (
 			<Node
 				{...this.props}
-				node={this.state.node}
+				node={this.props.node}
 				testToggle={() => this.handleToggle()}
 			/>
 		)
