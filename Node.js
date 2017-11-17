@@ -22,9 +22,10 @@ const nodeSource = {
         const didDrop = monitor.didDrop();
         const droppedTo = monitor.getDropResult();
         // preventing a node to be dropped inside itself
-        if(droppedTo.node && droppedTo.node.id != props.node.id){
+		let hasDropTarget =  droppedTo && droppedTo.node;
+		let droppedIntoItself = hasDropTarget && droppedTo.node.id == props.node.id;
+        if(hasDropTarget && !droppedIntoItself){
 			props.addNode(props, droppedTo);
-
 		}
     },
 }
@@ -33,17 +34,8 @@ const nodeTarget = {
 	canDrop(props, monitor){
 		// You cannot drop into a search node
 		if(props.node.type == 'search'){
-			console.log("Can't drop");
-			console.log("Did Drop ", monitor.didDrop());
-			console.log("Is over ", monitor.isOver({ shallow: true }));
-			console.log("-------------------------");
 			return false;
 		}else{
-			console.log("************");
-			console.log("Can drop");
-			console.log("Did Drop ", monitor.didDrop());
-			console.log("Is over ", monitor.isOver({ shallow: true }));
-			console.log("************");
 			return true;
 		}
 	},
@@ -55,13 +47,11 @@ const nodeTarget = {
     },
     drop(props, monitor, component) {
         // monitor.didDrop() checkes if the event was handled by a nested (child) node.
-		// monitor.isOver checks if the event is on the current droptarget not a nested one
-        if( (monitor.canDrop() && !monitor.didDrop() && !monitor.isOver({ shallow: true }) ) || (!monitor.didDrop() && monitor.isOver({ shallow: true })) ){
+		let didDrop = monitor.didDrop();
+        if(!didDrop){
             // these (props which is the node that I dropped into) are available to the nodesource as monitor.getDropResult()
-			console.log("RETURNING PROPS ", props.node.title);
 			return props;
         }
-
     },
 };
 
@@ -69,7 +59,7 @@ const nodeTarget = {
 @DropTarget(ItemTypes.NODE, nodeTarget, (connect, monitor) => ({
     connectDropTarget: connect.dropTarget(),
     isHovering: monitor.isOver({ shallow: true }),
-	isHoveringOnSearchChild: monitor.canDrop() && !monitor.didDrop() && monitor.isOver({child: true})
+	isHoveringOnSearchChild: monitor.canDrop()  && monitor.isOver({shallow: true})
 }))
 @DragSource(ItemTypes.NODE, nodeSource, (connect, monitor) => ({
 	connectDragSource: connect.dragSource(),
@@ -94,36 +84,50 @@ class Node extends Component {
         const opacity = isDragging ? 0.4 : 1;
 		let color = 'black';
 		// This is for testing purposes
-		if(isHoveringOnSearchChild){
-			color = 'blue';
+
+		color = (isHovering && !isDragging && node.type !=='search') || isHoveringOnSearchChild ? 'red' : 'black';
+		if(node.rootNode){
+			if(!isHovering){
+				return connectDragSource(connectDropTarget(
+					<ul style={{ listStyleType: 'none'}} >{children}</ul>
+		        ));
+			}else{
+				return connectDragSource(connectDropTarget(
+					<div>
+						<ul style={{ listStyleType: 'none'}} >{children}</ul>
+						<hr/>
+					</div>
+
+		        ));
+			}
 		}else{
-			color = (isHovering && !isDragging && node.type !=='search') || isHoveringOnSearchChild ? 'red' : 'black';
+			return connectDragSource(connectDropTarget(
+	            <li
+	                key={node.id}
+	                style={{
+	                    ...style,
+	                    opacity,
+	                    cursor: 'move'
+	                }}
+
+	            >
+	                <input
+	                    type="checkbox"
+	                    onChange={testToggle}
+	                />
+					<FontAwesome
+				        name={node.type}
+				        style={{ textShadow: '0 1px 0 rgba(0, 0, 0, 0.1)' }}
+				      />
+	                <small  style={{color}}> {node.title } </small>
+	                <ul  style={{ listStyleType: 'none'}}>
+	                    {children}
+	                </ul>
+
+	            </li>,
+	        ));
 		}
-        return connectDragSource(connectDropTarget(
-            <li
-                key={node.id}
-                style={{
-                    ...style,
-                    opacity,
-                    cursor: 'move'
-                }}
 
-            >
-                <input
-                    type="checkbox"
-                    onChange={testToggle}
-                />
-				<FontAwesome
-			        name={node.type}
-			        style={{ textShadow: '0 1px 0 rgba(0, 0, 0, 0.1)' }}
-			      />
-                <small  style={{color}}> {node.title } </small>
-                <ul  style={{ listStyleType: 'none'}}>
-                    {children}
-                </ul>
-
-            </li>,
-        ));
 	}
 }
 
