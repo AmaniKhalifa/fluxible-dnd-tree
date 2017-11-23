@@ -64,25 +64,28 @@ export default class Tree extends Component {
 
     }
     addNode = (node, parent, position) => {
-        console.log("Position ", position);
         parent = parent.node;
         node = node.node;
-        this.removeNode(this.state.tree, node.id);
-        if(position == 'into'){
-            if(!parent.children){
-                parent.children = [];
-            }
-            parent.children.push(node);
-        }else{
-            var t = this.getParent(this.state.tree[0], parent.id);
-            let tNode = t['node'];
-            let tIndex = t['index'];
-            if(position == 'before'){
-                tNode.children.splice(tIndex, 0, node);
-            }else{
-                tNode.children.splice(tIndex + 1, 0, node);
+        // Not dropping before/after dummy root node
+        if(!(parent.rootNode && position !== 'into')){
+            this.removeNode(this.state.tree, node.id);
+            if(position == 'into'){
+                if(!parent.children){
+                    parent.children = [];
+                }
+                parent.children.push(node);
+            }else {
+                var t = this.getParent(this.state.tree[0], parent.id);
+                let tNode = t['node'];
+                let tIndex = t['index'];
+                if(position == 'before'){
+                    tNode.children.splice(tIndex, 0, node);
+                }else{
+                    tNode.children.splice(tIndex + 1, 0, node);
+                }
             }
         }
+
 
         this.forceUpdate();
 

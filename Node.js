@@ -35,6 +35,7 @@ const nodeSource = {
 
 const nodeTarget = {
 	canDrop(props, monitor){
+
 		// You cannot drop into a search node
 		if(props.node.type == 'search'){
 			return false;
@@ -43,56 +44,49 @@ const nodeTarget = {
 		}
 	},
 	hover(props, monitor, component) {
+		component.setState({'isHoverBefore': false});
+
         const dragged  = monitor.getItem();
         const droppedTo  = props;
         // TODO Do some stuff when on hover
+		const draggedIndex = monitor.getItem().node.id;
+		const dropToIndex = props.node.id;
+		const hoverBoundingRect = ReactDOM.findDOMNode(component).getBoundingClientRect();
 
-		// const dragIndex = monitor.getItem().node.id;
-		// const hoverIndex = props.node.id;
-		//
-		//
-		// let dragEl = document.getElementById("node_"+dragIndex);
-		// let hoverEl = document.getElementById("node_"+hoverIndex);
-		// let position = dragEl.compareDocumentPosition(hoverEl);
-		// // console.log(position);
-		// // console.log("following", position & 0x04);
-		// // console.log("preceding", position & 0x02);
-		// //
-		// // if( position & 0x04) {
-		// //   console.log("Dragged before hover");
-		// //  	}
-		// //  	if( position & 0x02){
-		// //   console.log("Hovered is before Dragged");
-		// // }
-		// let dragbefore = position & 0x04;
-		// let hoverbefore = position & 0x02;
-		// // Determine rectangle on screen
-		// const hoverBoundingRect = ReactDOM.findDOMNode(component).getBoundingClientRect();
-		//
-		// // Get vertical middle
-		// const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
-		//
-		// // Determine mouse position
-		// const clientOffset = monitor.getClientOffset()
-		//
-		// // Get pixels to the top
-		// const hoverClientY = clientOffset.y - hoverBoundingRect.top
-		//
-		// // Only perform the move when the mouse has crossed half of the items height
-		// // When dragging downwards, only move when the cursor is below 50%
-		// // When dragging upwards, only move when the cursor is above 50%
-		//
-		// // Dragging downwards
-		// if (hoverClientY < hoverMiddleY) {
-		// 	console.log(" vvv - Dragging downwards");
-		// }
-		//
-		// // Dragging upwards
-		// if (hoverClientY > hoverMiddleY) {
-		// 	console.log(" ^^^ - Dragging upwards");
-		//
-		// }
-		// Time to actually perform the action
+		// Get vertical middle
+		const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+		const hoverEightY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 8;
+
+
+		// Determine mouse position
+		const clientOffset = monitor.getClientOffset();
+
+		// Get pixels to the top
+		const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+
+		var dropPos = null;
+		// Dragging downwards
+		if (hoverClientY < hoverMiddleY - hoverEightY) {
+			dropPos = 'before';
+			component.setState({'isHoverBefore': true});
+			component.setState({'isHoverAfter': false});
+
+		}
+
+		// Dragging upwards
+		else if (hoverClientY > hoverMiddleY + hoverEightY) {
+			dropPos = 'after';
+			component.setState({'isHoverBefore': false});
+			component.setState({'isHoverAfter': true});
+
+		}
+
+		else {
+			dropPos = 'into';
+			component.setState({'isHoverBefore': false});
+			component.setState({'isHoverAfter': false});
+		}
+		return dropPos;
 
 
     },
@@ -104,8 +98,6 @@ const nodeTarget = {
 
 			const draggedIndex = monitor.getItem().node.id;
 			const dropToIndex = props.node.id;
-			console.log("dragged ", draggedIndex);
-			console.log("dropToIndex", dropToIndex);
 
 			let draggedEl = document.getElementById("node_"+draggedIndex);
 			let droppedToEl = document.getElementById("node_"+dropToIndex);
@@ -147,6 +139,7 @@ const nodeTarget = {
 			else if (hoverClientY > hoverMiddleY + hoverEightY) {
 				console.log(" After Node");
 				dropPos = 'after';
+
 			}
 
 			else{
@@ -164,8 +157,7 @@ const nodeTarget = {
 
 @DropTarget(ItemTypes.NODE, nodeTarget, (connect, monitor) => ({
     connectDropTarget: connect.dropTarget(),
-    isHovering: monitor.isOver({ shallow: true }),
-	isHoveringOnSearchChild: monitor.canDrop()  && monitor.isOver({shallow: true})
+    isHovering: monitor.isOver({ shallow: true })
 }))
 @DragSource(ItemTypes.NODE, nodeSource, (connect, monitor) => ({
 	connectDragSource: connect.dragSource(),
@@ -181,57 +173,56 @@ class Node extends Component {
         children: PropTypes.node,
         addNode: PropTypes.func.isRequired,
         isHovering: PropTypes.bool.isRequired,
-		isHoveringOnSearchChild: PropTypes.bool.isRequired
+		isHoverBefore: PropTypes.bool.isRequired,
+		isHoverAfter: PropTypes.bool.isRequired
 
 	}
 
 	render() {
-        const { isDragging, connectDragSource, connectDropTarget, testToggle, node, children, isHovering, isHoveringOnSearchChild } = this.props;
+        const { isDragging, connectDragSource, connectDropTarget, testToggle, node, children, isHovering, isHoverBefore, isHoverAfter} = this.props;
         const opacity = isDragging ? 0.4 : 1;
-		let color = 'black';
-		// This is for testing purposes
+		let color = (isHovering && !isDragging && !isHoverBefore && !isHoverAfter && node.type !=='search') ? 'red' : 'black';
 
-		color = (isHovering && !isDragging && node.type !=='search') || isHoveringOnSearchChild ? 'red' : 'black';
+
 		if(node.rootNode){
-			if(!isHovering){
-				return connectDragSource(connectDropTarget(
-					<ul id={"node_"+node.id} style={{ listStyleType: 'none'}} >{children}</ul>
-		        ));
-			}else{
-				return connectDragSource(connectDropTarget(
+				return connectDropTarget(
 					<div>
 						<ul id={"node_"+node.id} style={{ listStyleType: 'none'}} >{children}</ul>
-						<hr/>
+						{ isHovering && <hr />}
 					</div>
 
-		        ));
-			}
+		        );
 		}else{
-			return connectDragSource(connectDropTarget(
-	            <li id={"node_"+node.id}
-	                key={node.id}
-	                style={{
-	                    ...style,
-	                    opacity,
-	                    cursor: 'move'
-	                }}
+				return connectDragSource(connectDropTarget(
+		            <li id={"node_"+node.id}
+		                key={node.id}
+		                style={{
+		                    ...style,
+		                    opacity,
+		                    cursor: 'move'
+		                }}
 
-	            >
-	                <input
-	                    type="checkbox"
-	                    onChange={testToggle}
-	                />
-					<FontAwesome
-				        name={node.type}
-				        style={{ textShadow: '0 1px 0 rgba(0, 0, 0, 0.1)' }}
-				      />
-	                <small  style={{color}}> {node.title } </small>
-	                <ul  style={{ listStyleType: 'none'}}>
-	                    {children}
-	                </ul>
+		            >
+						{ isHoverBefore && isHovering && <hr id="before"/>}
+		                <input
+		                    type="checkbox"
+		                    onChange={testToggle}
+		                />
+						<FontAwesome
+					        name={node.type}
+					        style={{ textShadow: '0 1px 0 rgba(0, 0, 0, 0.1)' }}
+					      />
+		                <small  style={{color}}> {node.title } </small>
 
-	            </li>,
-	        ));
+		                <ul  style={{ listStyleType: 'none'}}>
+		                    {children}
+		                </ul>
+						{ isHoverAfter && isHovering && <hr id="before"/>}
+
+		            </li>
+					,
+		        ));
+
 		}
 
 	}
@@ -240,13 +231,21 @@ class Node extends Component {
 export default class StatefulNode extends Component {
     constructor(props) {
         super(props);
+		this.state = {
+			hoverBefore: false,
+			hoverAfter: false
+		}
     }
+
+
 
 	render() {
 		return (
 			<Node
 				{...this.props}
 				node={this.props.node}
+				isHoverBefore = {this.state.hoverBefore}
+				isHoverAfter = {this.state.hoverAfter}
 				testToggle={() => this.handleToggle()}
 			/>
 		)
@@ -255,4 +254,6 @@ export default class StatefulNode extends Component {
 	handleToggle() {
 		console.log("Checked!!");
 	}
+
+
 }
