@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { DragSource, DropTarget } from 'react-dnd';
 import ItemTypes from './ItemTypes';
 import FontAwesome from 'react-fontawesome';
+import ReactDOM from 'react-dom';
+
 
 const style = {
 	// border: '1px dashed gray',
@@ -15,17 +17,18 @@ const style = {
 
 const nodeSource = {
 	beginDrag(props) {
-        console.log("Dragging ...");
         return props;
 	},
     endDrag(props, monitor) {
-        const didDrop = monitor.didDrop();
-        const droppedTo = monitor.getDropResult();
+		const droppedObj = monitor.getDropResult();
+
         // preventing a node to be dropped inside itself
-		let hasDropTarget =  droppedTo && droppedTo.node;
-		let droppedIntoItself = hasDropTarget && droppedTo.node.id == props.node.id;
+		let hasDropTarget = droppedObj && droppedObj.props && droppedObj.props.node;
+		let droppedIntoItself = hasDropTarget && droppedObj.props.node.id === props.node.id;
         if(hasDropTarget && !droppedIntoItself){
-			props.addNode(props, droppedTo);
+			const droppedTo = droppedObj.props;
+			const dropPosition = droppedObj.dropPos;
+			props.addNode(props, droppedTo, dropPosition);
 		}
     },
 }
@@ -39,18 +42,121 @@ const nodeTarget = {
 			return true;
 		}
 	},
-	hover(props, monitor) {
-        const { id: draggedId } = monitor.getItem();
-        const { id: overId } = props;
+	hover(props, monitor, component) {
+        const dragged  = monitor.getItem();
+        const droppedTo  = props;
         // TODO Do some stuff when on hover
+
+		// const dragIndex = monitor.getItem().node.id;
+		// const hoverIndex = props.node.id;
+		//
+		//
+		// let dragEl = document.getElementById("node_"+dragIndex);
+		// let hoverEl = document.getElementById("node_"+hoverIndex);
+		// let position = dragEl.compareDocumentPosition(hoverEl);
+		// // console.log(position);
+		// // console.log("following", position & 0x04);
+		// // console.log("preceding", position & 0x02);
+		// //
+		// // if( position & 0x04) {
+		// //   console.log("Dragged before hover");
+		// //  	}
+		// //  	if( position & 0x02){
+		// //   console.log("Hovered is before Dragged");
+		// // }
+		// let dragbefore = position & 0x04;
+		// let hoverbefore = position & 0x02;
+		// // Determine rectangle on screen
+		// const hoverBoundingRect = ReactDOM.findDOMNode(component).getBoundingClientRect();
+		//
+		// // Get vertical middle
+		// const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
+		//
+		// // Determine mouse position
+		// const clientOffset = monitor.getClientOffset()
+		//
+		// // Get pixels to the top
+		// const hoverClientY = clientOffset.y - hoverBoundingRect.top
+		//
+		// // Only perform the move when the mouse has crossed half of the items height
+		// // When dragging downwards, only move when the cursor is below 50%
+		// // When dragging upwards, only move when the cursor is above 50%
+		//
+		// // Dragging downwards
+		// if (hoverClientY < hoverMiddleY) {
+		// 	console.log(" vvv - Dragging downwards");
+		// }
+		//
+		// // Dragging upwards
+		// if (hoverClientY > hoverMiddleY) {
+		// 	console.log(" ^^^ - Dragging upwards");
+		//
+		// }
+		// Time to actually perform the action
+
 
     },
     drop(props, monitor, component) {
         // monitor.didDrop() checkes if the event was handled by a nested (child) node.
 		let didDrop = monitor.didDrop();
-        if(!didDrop){
+		let isHoveringOnThisNode = monitor.isOver({shallow: true});
+		if(!didDrop){
+
+			const draggedIndex = monitor.getItem().node.id;
+			const dropToIndex = props.node.id;
+			console.log("dragged ", draggedIndex);
+			console.log("dropToIndex", dropToIndex);
+
+			let draggedEl = document.getElementById("node_"+draggedIndex);
+			let droppedToEl = document.getElementById("node_"+dropToIndex);
+			let position = draggedEl.compareDocumentPosition(droppedToEl);
+			// console.log(position);
+			// console.log("following", position & 0x04);
+			// console.log("preceding", position & 0x02);
+			//
+			// if( position & 0x04) {
+			//   console.log("Dragged before hover");
+			//  	}
+			//  	if( position & 0x02){
+			//   console.log("Hovered is before Dragged");
+			// }
+			let draggedBefore = position & 0x04;
+			let deoppedBefore = position & 0x02;
+			// Determine rectangle on screen
+			const hoverBoundingRect = ReactDOM.findDOMNode(component).getBoundingClientRect();
+
+			// Get vertical middle
+			const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+			const hoverEightY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 8;
+
+
+			// Determine mouse position
+			const clientOffset = monitor.getClientOffset();
+
+			// Get pixels to the top
+			const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+
+			var dropPos = null;
+			// Dragging downwards
+			if (hoverClientY < hoverMiddleY - hoverEightY) {
+				console.log(" Before Node");
+				dropPos = 'before';
+			}
+
+			// Dragging upwards
+			else if (hoverClientY > hoverMiddleY + hoverEightY) {
+				console.log(" After Node");
+				dropPos = 'after';
+			}
+
+			else{
+				console.log(" Into Node");
+				dropPos = 'into';
+			}
+
+
             // these (props which is the node that I dropped into) are available to the nodesource as monitor.getDropResult()
-			return props;
+			return {'props':props, 'dropPos': dropPos};
         }
     },
 };
@@ -89,12 +195,12 @@ class Node extends Component {
 		if(node.rootNode){
 			if(!isHovering){
 				return connectDragSource(connectDropTarget(
-					<ul style={{ listStyleType: 'none'}} >{children}</ul>
+					<ul id={"node_"+node.id} style={{ listStyleType: 'none'}} >{children}</ul>
 		        ));
 			}else{
 				return connectDragSource(connectDropTarget(
 					<div>
-						<ul style={{ listStyleType: 'none'}} >{children}</ul>
+						<ul id={"node_"+node.id} style={{ listStyleType: 'none'}} >{children}</ul>
 						<hr/>
 					</div>
 
@@ -102,7 +208,7 @@ class Node extends Component {
 			}
 		}else{
 			return connectDragSource(connectDropTarget(
-	            <li
+	            <li id={"node_"+node.id}
 	                key={node.id}
 	                style={{
 	                    ...style,

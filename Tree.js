@@ -10,13 +10,13 @@ export default class Tree extends Component {
           tree: [
               {title:'DummyNode', id:0, rootNode:true, children:[
                   {title: 'Root', id: 1, type:'folder', children: [
-                                                {title: 'Child', pid:1, id: 2, type:'folder', children:[ {title: ' Child 22', id: 3, type:'search'}]}
+                                                {title: 'Child', pid:1, id: 2, type:'folder', children:[ {title: ' Child 22', id: 3, type:'folder'}]}
                                         ]},
 
-              {title: 'Empty', id: 4, type:'search'},
+              {title: 'Empty', id: 4, type:'folder'},
 
               {title: 'Two Nodes', id: 5, type:'folder',  children: [
-                                {title: 'Node 1', id: 6, type: 'search'},
+                                {title: 'Node 1', id: 6, type: 'folder'},
                                 {title: 'Node 2', id: 7, type: 'folder'}
               ]}
               ]}
@@ -45,17 +45,45 @@ export default class Tree extends Component {
         return;
     }
 
-    addNode = (node, parent) => {
+
+    getParent = (node, id) => {
+        if (node.children) {
+            let children = node.children;
+            for (let i = 0; i < children.length; i++) {
+                if (children[i].id === id ) {
+                    return {'node':node,'index':i};
+                }
+            }
+            for (let i = 0; i < children.length; i++) {
+                let res = this.getParent(children[i], id);
+                if(res){
+                    return res;
+                }
+            }
+        }
+
+    }
+    addNode = (node, parent, position) => {
+        console.log("Position ", position);
         parent = parent.node;
         node = node.node;
-        // TODO delete the node and add the same node to the same place
         this.removeNode(this.state.tree, node.id);
-
-        if(!parent.children){
-            parent.children = [];
+        if(position == 'into'){
+            if(!parent.children){
+                parent.children = [];
+            }
+            parent.children.push(node);
+        }else{
+            var t = this.getParent(this.state.tree[0], parent.id);
+            let tNode = t['node'];
+            let tIndex = t['index'];
+            if(position == 'before'){
+                tNode.children.splice(tIndex, 0, node);
+            }else{
+                tNode.children.splice(tIndex + 1, 0, node);
+            }
         }
-        parent.children.push(node);
-        console.log("Tree  ", this.state.tree);
+
         this.forceUpdate();
 
     };
@@ -66,7 +94,7 @@ export default class Tree extends Component {
             for (var i = 0; node.children && i < node.children.length; i++) {
                   children.push(buildNode(node.children[i]));
             }
-            return <Node addNode={this.addNode} node={node} > {node.children && children } </Node>;
+            return <Node  addNode={this.addNode} node={node} > {node.children && children } </Node>;
         };
 
         let nodes = [];
