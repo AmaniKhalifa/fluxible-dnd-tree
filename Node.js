@@ -33,15 +33,6 @@ const nodeSource = {
 }
 
 const nodeTarget = {
-	canDrop(props, monitor){
-
-		// You cannot drop into a search node
-		if(props.node.type == 'search'){
-			return false;
-		}else{
-			return true;
-		}
-	},
 	hover(props, monitor, component) {
 		component.setState({'isHoverBefore': false});
 
@@ -54,7 +45,7 @@ const nodeTarget = {
 
 		// Get vertical middle
 		const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-		const hoverEightY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 8;
+		const hoverEightY = (props.node.type == 'search') ? 0 : (hoverBoundingRect.bottom - hoverBoundingRect.top) / 8;
 
 
 		// Determine mouse position
@@ -65,7 +56,7 @@ const nodeTarget = {
 
 		var dropPos = null;
 		// Dragging downwards
-		if (hoverClientY < (hoverMiddleY - hoverEightY)) {
+		if (hoverClientY <= (hoverMiddleY - hoverEightY)) {
 			dropPos = 'before';
 			component.setState({'isHoverBefore': true});
 			component.setState({'isHoverAfter': false});
@@ -118,7 +109,7 @@ const nodeTarget = {
 
 			// Get vertical middle
 			const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-			const hoverEightY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 8;
+			const hoverEightY = (props.node.type == 'search') ? 0 : (hoverBoundingRect.bottom - hoverBoundingRect.top) / 8;
 
 
 			// Determine mouse position
@@ -129,7 +120,7 @@ const nodeTarget = {
 
 			var dropPos = null;
 			// Dragging downwards
-			if (hoverClientY < (hoverMiddleY - hoverEightY)) {
+			if (hoverClientY <= (hoverMiddleY - hoverEightY)) {
 				console.log(" Before Node");
 				dropPos = 'before';
 			}

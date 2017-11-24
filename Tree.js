@@ -10,13 +10,13 @@ export default class Tree extends Component {
           tree: [
               {title:'DummyNode', id:0, rootNode:true, children:[
                   {title: 'Root', id: 1, type:'folder', children: [
-                                                {title: 'Child', pid:1, id: 2, type:'folder', children:[ {title: ' Child 22', id: 3, type:'folder'}]}
+                                                {title: 'Child', pid:1, id: 2, type:'folder', children:[ {title: ' Child 22', id: 3, type:'search'}]}
                                         ]},
 
-              {title: 'Empty', id: 4, type:'folder'},
+              {title: 'Empty', id: 4, type:'search'},
 
               {title: 'Two Nodes', id: 5, type:'folder',  children: [
-                                {title: 'Node 1', id: 6, type: 'folder'},
+                                {title: 'Node 1', id: 6, type: 'search'},
                                 {title: 'Node 2', id: 7, type: 'folder'}
               ]}
               ]}
