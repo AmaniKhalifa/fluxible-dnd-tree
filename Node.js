@@ -10,7 +10,6 @@ const style = {
 	// border: '1px dashed gray',
 	padding: '0.5rem 1rem',
 	marginBottom: '.5rem',
-	backgroundColor: 'transparent',
 	width: '20rem',
 }
 
@@ -66,7 +65,7 @@ const nodeTarget = {
 
 		var dropPos = null;
 		// Dragging downwards
-		if (hoverClientY < hoverMiddleY - hoverEightY) {
+		if (hoverClientY < (hoverMiddleY - hoverEightY)) {
 			dropPos = 'before';
 			component.setState({'isHoverBefore': true});
 			component.setState({'isHoverAfter': false});
@@ -74,7 +73,7 @@ const nodeTarget = {
 		}
 
 		// Dragging upwards
-		else if (hoverClientY > hoverMiddleY + hoverEightY) {
+		else if (hoverClientY > (hoverMiddleY + hoverEightY )) {
 			dropPos = 'after';
 			component.setState({'isHoverBefore': false});
 			component.setState({'isHoverAfter': true});
@@ -130,13 +129,13 @@ const nodeTarget = {
 
 			var dropPos = null;
 			// Dragging downwards
-			if (hoverClientY < hoverMiddleY - hoverEightY) {
+			if (hoverClientY < (hoverMiddleY - hoverEightY)) {
 				console.log(" Before Node");
 				dropPos = 'before';
 			}
 
 			// Dragging upwards
-			else if (hoverClientY > hoverMiddleY + hoverEightY) {
+			else if (hoverClientY > (hoverMiddleY + hoverEightY)) {
 				console.log(" After Node");
 				dropPos = 'after';
 
@@ -181,7 +180,13 @@ class Node extends Component {
 	render() {
         const { isDragging, connectDragSource, connectDropTarget, testToggle, node, children, isHovering, isHoverBefore, isHoverAfter} = this.props;
         const opacity = isDragging ? 0.4 : 1;
-		let color = (isHovering && !isDragging && !isHoverBefore && !isHoverAfter && node.type !=='search') ? 'red' : 'black';
+		let shade = (isHovering && !isDragging && !isHoverBefore && !isHoverAfter && node.type !=='search') ? {backgroundColor: '#e4dedd'} : {backgroundColor: 'transparent'};
+
+		let hoveringBeforeNode = isHoverBefore && isHovering && !isDragging;
+		let hoverBeforeVisibility = hoveringBeforeNode ? 'visible' : 'hidden';
+
+		let hoveringAfterNode = isHoverAfter && isHovering && !isDragging;
+		let hoverAfterVisibility = hoveringAfterNode ? 'visible' : 'hidden';
 
 
 		if(node.rootNode){
@@ -198,12 +203,13 @@ class Node extends Component {
 		                key={node.id}
 		                style={{
 		                    ...style,
+							...shade,
 		                    opacity,
 		                    cursor: 'move'
 		                }}
 
 		            >
-						{ isHoverBefore && isHovering && <hr id="before"/>}
+						<hr style={{visibility: hoverBeforeVisibility}} id="before"/>
 		                <input
 		                    type="checkbox"
 		                    onChange={testToggle}
@@ -212,12 +218,12 @@ class Node extends Component {
 					        name={node.type}
 					        style={{ textShadow: '0 1px 0 rgba(0, 0, 0, 0.1)' }}
 					      />
-		                <small  style={{color}}> {node.title } </small>
+		                <small  > {node.title } </small>
 
 		                <ul  style={{ listStyleType: 'none'}}>
 		                    {children}
 		                </ul>
-						{ isHoverAfter && isHovering && <hr id="before"/>}
+						<hr style={{visibility: hoverAfterVisibility}} id="before"/>
 
 		            </li>
 					,
