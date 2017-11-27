@@ -160,6 +160,7 @@ class Node extends Component {
         connectDropTarget: PropTypes.func.isRequired,
         isDragging: PropTypes.bool.isRequired,
         testToggle: PropTypes.func.isRequired,
+		expandOrCollapse: PropTypes.func.isRequired,
         node: PropTypes.any.isRequired,
         children: PropTypes.node,
         addNode: PropTypes.func.isRequired,
@@ -171,7 +172,7 @@ class Node extends Component {
 	}
 
 	render() {
-        const { isDragging, connectDragSource, connectDropTarget, testToggle, node, children, isHovering, isHoverBefore, isHoverAfter, collapsed} = this.props;
+        const { isDragging, connectDragSource, connectDropTarget, testToggle, node, children, isHovering, isHoverBefore, isHoverAfter, collapsed, expandOrCollapse} = this.props;
         const opacity = isDragging ? 0.4 : 1;
 		let shade = (isHovering && !isDragging && !isHoverBefore && !isHoverAfter && node.type !=='search') ? {backgroundColor: '#e4dedd'} : {backgroundColor: 'transparent'};
 
@@ -183,6 +184,7 @@ class Node extends Component {
 
 		let visibility = (collapsed) ? 'none' : 'block';
 		let statusIcon = (collapsed) ? 'plus' : 'minus';
+		let icon = (!collapsed && node.type !== 'search' ) ? 'folder-open' : node.type;
 
 		if(node.rootNode){
 				return connectDropTarget(
@@ -202,19 +204,15 @@ class Node extends Component {
 		                    opacity,
 		                    cursor: 'move'
 		                }}
-
 		            >
-
-
-
 						<hr style={{visibility: hoverBeforeVisibility}} id="before"/>
 		                <input
 		                    type="checkbox"
-							checked={collapsed}
 		                    onChange={testToggle}
 		                />
 						<FontAwesome
-					        name={node.type}
+							onClick={expandOrCollapse}
+					        name={icon}
 					        style={{ textShadow: '0 1px 0 rgba(0, 0, 0, 0.1)' }}
 					      />
 		                <small  > {node.title } </small>
@@ -253,7 +251,8 @@ export default class StatefulNode extends Component {
 				isHoverBefore = {this.state.hoverBefore}
 				isHoverAfter = {this.state.hoverAfter}
 				collapsed = {this.state.collapsed}
-				testToggle={() => this.changeCollapsedState()}
+				expandOrCollapse = {() => this.changeCollapsedState()}
+				testToggle={() => this.testToggle()}
 			/>
 		)
 	}
@@ -262,6 +261,10 @@ export default class StatefulNode extends Component {
 		this.setState({
 			collapsed: !this.state.collapsed
 		});
+	}
+
+	testToggle() {
+		console.log("Toggle ...");
 	}
 
 
