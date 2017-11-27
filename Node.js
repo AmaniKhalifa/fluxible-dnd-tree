@@ -237,11 +237,15 @@ export default class StatefulNode extends Component {
 		this.state = {
 			hoverBefore: false,
 			hoverAfter: false,
-			collapsed: false,
+			collapsed: this.props.collapsed
 		}
     }
 
-
+	componentWillReceiveProps(nextProps){
+		this.setState({
+			collapsed: !this.props.collapsed
+		});
+	}
 
 	render() {
 		return (

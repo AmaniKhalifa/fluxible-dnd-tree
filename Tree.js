@@ -20,9 +20,8 @@ export default class Tree extends Component {
                                 {title: 'Node 2', id: 7, type: 'folder'}
               ]}
               ]}
-
-
-        ]
+        ],
+        collapsed: false
     };
 
 
@@ -97,16 +96,23 @@ export default class Tree extends Component {
             for (var i = 0; node.children && i < node.children.length; i++) {
                   children.push(buildNode(node.children[i]));
             }
-            return <Node  addNode={this.addNode} node={node} > {node.children && children } </Node>;
+            return <Node  collapsed={this.state.collapsed} addNode={this.addNode} node={node} > {node.children && children } </Node>;
         };
 
         let nodes = [];
         for (let i = 0; i < this.state.tree.length; i++) {
-            nodes.push(buildNode( this.state.tree[i]));
+            nodes.push(buildNode( this.state.tree[i] ));
         }
 
 		return (
 			<div style={{ overflow: 'hidden', clear: 'both', margin: '-.5rem' }}>
+                <button onClick={() => {
+                    this.setState({
+                        collapsed: !this.state.collapsed
+                    });
+                }}>
+                    {this.state.collapsed ? 'Expand All' : 'Collapse All'}
+                </button>
 				<div style={{ float: 'left' }}>
                     <ul style={{ listStyleType: 'none'}}>
                         {nodes}
