@@ -34,8 +34,9 @@ const nodeSource = {
 
 const nodeTarget = {
 	hover(props, monitor, component) {
-		component.setState({'isHoverBefore': false});
-
+		if(component.props.collapsed){
+			component.props.testToggle();
+		}
         const dragged  = monitor.getItem();
         const droppedTo  = props;
         // TODO Do some stuff when on hover
@@ -164,12 +165,13 @@ class Node extends Component {
         addNode: PropTypes.func.isRequired,
         isHovering: PropTypes.bool.isRequired,
 		isHoverBefore: PropTypes.bool.isRequired,
-		isHoverAfter: PropTypes.bool.isRequired
+		isHoverAfter: PropTypes.bool.isRequired,
+		collapsed: PropTypes.bool.isRequired
 
 	}
 
 	render() {
-        const { isDragging, connectDragSource, connectDropTarget, testToggle, node, children, isHovering, isHoverBefore, isHoverAfter} = this.props;
+        const { isDragging, connectDragSource, connectDropTarget, testToggle, node, children, isHovering, isHoverBefore, isHoverAfter, collapsed} = this.props;
         const opacity = isDragging ? 0.4 : 1;
 		let shade = (isHovering && !isDragging && !isHoverBefore && !isHoverAfter && node.type !=='search') ? {backgroundColor: '#e4dedd'} : {backgroundColor: 'transparent'};
 
@@ -179,6 +181,8 @@ class Node extends Component {
 		let hoveringAfterNode = isHoverAfter && isHovering && !isDragging;
 		let hoverAfterVisibility = hoveringAfterNode ? 'visible' : 'hidden';
 
+		let visibility = (collapsed) ? 'none' : 'block';
+		let statusIcon = (collapsed) ? 'plus' : 'minus';
 
 		if(node.rootNode){
 				return connectDropTarget(
@@ -200,6 +204,9 @@ class Node extends Component {
 		                }}
 
 		            >
+
+
+
 						<hr style={{visibility: hoverBeforeVisibility}} id="before"/>
 		                <input
 		                    type="checkbox"
@@ -211,7 +218,7 @@ class Node extends Component {
 					      />
 		                <small  > {node.title } </small>
 
-		                <ul  style={{ listStyleType: 'none'}}>
+		                <ul  style={{ listStyleType: 'none', display: visibility}}>
 		                    {children}
 		                </ul>
 						<hr style={{visibility: hoverAfterVisibility}} id="before"/>
@@ -230,7 +237,8 @@ export default class StatefulNode extends Component {
         super(props);
 		this.state = {
 			hoverBefore: false,
-			hoverAfter: false
+			hoverAfter: false,
+			collapsed: false,
 		}
     }
 
@@ -243,13 +251,16 @@ export default class StatefulNode extends Component {
 				node={this.props.node}
 				isHoverBefore = {this.state.hoverBefore}
 				isHoverAfter = {this.state.hoverAfter}
-				testToggle={() => this.handleToggle()}
+				collapsed = {this.state.collapsed}
+				testToggle={() => this.changeCollapsedState()}
 			/>
 		)
 	}
 
-	handleToggle() {
-		console.log("Checked!!");
+	changeCollapsedState() {
+		this.setState({
+			collapsed: !this.state.collapsed
+		});
 	}
 
 
