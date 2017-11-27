@@ -210,6 +210,7 @@ class Node extends Component {
 						<hr style={{visibility: hoverBeforeVisibility}} id="before"/>
 		                <input
 		                    type="checkbox"
+							checked={collapsed}
 		                    onChange={testToggle}
 		                />
 						<FontAwesome
