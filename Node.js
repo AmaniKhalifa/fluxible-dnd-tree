@@ -243,7 +243,7 @@ export default class StatefulNode extends Component {
 
 	componentWillReceiveProps(nextProps){
 		this.setState({
-			collapsed: !this.props.collapsed
+			collapsed: nextProps.collapsed
 		});
 	}
 
