@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { DragSource, DropTarget } from 'react-dnd';
 import FontAwesome from 'react-fontawesome';
-import ReactTooltip from 'react-tooltip';
 import ItemTypes from './ItemTypes';
 
 
@@ -37,7 +36,6 @@ const getDropPos = (component, monitor) => {
 		dropPos = 'before';
 		component.setState({'isHoverBefore': true});
 		component.setState({'isHoverAfter': false});
-
 	}
 
 	// Dragging upwards
@@ -79,14 +77,80 @@ const nodeTarget = {
 		if(component.props.collapsed){
 			component.props.testToggle();
 		}
-		return getDropPos(component, monitor);
+		const hoverBoundingRect = ReactDOM.findDOMNode(component).getBoundingClientRect();
+
+		// Get vertical middle
+		const nodeChildren = document.getElementById('children_node_'+component.props.node.id);
+		const nodeChildrenHeight = (nodeChildren) ? nodeChildren.offsetHeight : 0;
+
+		const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top - nodeChildrenHeight) / 2;
+		const hoverEightY = (props.node.type == 'search') ? 0 : (hoverBoundingRect.bottom - hoverBoundingRect.top - nodeChildrenHeight) / 8;
+
+
+		// Determine mouse position
+		const clientOffset = monitor.getClientOffset();
+
+		// Get pixels to the top
+		const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+
+		var dropPos = null;
+		// Dragging downwards
+		if (hoverClientY <= (hoverMiddleY - hoverEightY)) {
+			dropPos = 'before';
+			component.setState({'isHoverBefore': true});
+			component.setState({'isHoverAfter': false});
+		}
+
+		// Dragging upwards
+		else if (hoverClientY > (hoverMiddleY + hoverEightY )) {
+			dropPos = 'after';
+			component.setState({'isHoverBefore': false});
+			component.setState({'isHoverAfter': true});
+
+		}
+
+		else {
+			dropPos = 'into';
+			component.setState({'isHoverBefore': false});
+			component.setState({'isHoverAfter': false});
+		}
+		return dropPos;
     },
     drop(props, monitor, component) {
         // monitor.didDrop() checkes if the event was handled by a nested (child) node.
 		let didDrop = monitor.didDrop();
 		let isHoveringOnThisNode = monitor.isOver({shallow: true});
 		if(!didDrop){
-			var dropPos = getDropPos(component, monitor);
+			const hoverBoundingRect = ReactDOM.findDOMNode(component).getBoundingClientRect();
+
+			// Get vertical middle
+			const nodeChildren = document.getElementById('children_node_'+component.props.node.id);
+			const nodeChildrenHeight = (nodeChildren) ? nodeChildren.offsetHeight : 0;
+
+			const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top - nodeChildrenHeight) / 2;
+			const hoverEightY = (props.node.type == 'search') ? 0 : (hoverBoundingRect.bottom - hoverBoundingRect.top - nodeChildrenHeight) / 8;
+
+
+			// Determine mouse position
+			const clientOffset = monitor.getClientOffset();
+
+			// Get pixels to the top
+			const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+
+			var dropPos = null;
+			// Dragging downwards
+			if (hoverClientY <= (hoverMiddleY - hoverEightY)) {
+				dropPos = 'before';
+			}
+
+			// Dragging upwards
+			else if (hoverClientY > (hoverMiddleY + hoverEightY )) {
+				dropPos = 'after';
+			}
+
+			else {
+				dropPos = 'into';
+			}
 
             // these (props which is the node that I dropped into) are available to the nodesource as monitor.getDropResult()
 			return {'props':props, 'dropPos': dropPos};
@@ -161,14 +225,12 @@ class Node extends Component {
 		                    cursor: 'move'
 		                }}
 		            >
-						<hr style={{visibility: hoverBeforeVisibility}} id="before"/>
+						<hr style={{visibility: hoverBeforeVisibility} } id="before"/>
 		                <input
 		                    type="checkbox"
 		                    onChange={testToggle}
 		                />
-						<span data-tip data-for={'hover_node_'+node.id}
-							onMouseOver={onMouseEnter}
-							onMouseOut={onMouseLeave}>
+						<span>
 							<FontAwesome
 								onClick={expandOrCollapse}
 						        name={icon}
@@ -176,10 +238,6 @@ class Node extends Component {
 						      />
 			                <small  > {node.title } </small>
 						</span>
-						{/* TODO adjudt tooltip position */}
-						{!isDragging && <ReactTooltip offset={{bottom:10, right: node.title.length*10 }} isCapture={false} event="mouseenter" eventOff="mouseleave" place="right" type="dark" effect="solid" id={'hover_node_'+node.id}>
-							{node.title}
-						</ReactTooltip>}
 		                <ul  id={'children_node_'+node.id} style={{ listStyleType: 'none', display: visibility}}>
 		                    {children}
 		                </ul>
@@ -239,9 +297,6 @@ export default class StatefulNode extends Component {
 		});
 	}
 	onMouseEnter(e){
-		if(this.props.node.id == 5){
-			console.log("Mouse enter ");
-		}
 		this.setState({
 			color: 'red'
 		});
