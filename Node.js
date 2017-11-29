@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { DragSource, DropTarget } from 'react-dnd';
+import { Tooltip, OverlayTrigger } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import ItemTypes from './ItemTypes';
 
@@ -201,6 +202,7 @@ class Node extends Component {
 		let visibility = (collapsed) ? 'none' : 'block';
 		let statusIcon = (collapsed) ? 'plus' : 'minus';
 		let icon = (!collapsed && node.type !== 'search' ) ? 'folder-open' : node.type;
+		const tooltip = <Tooltip id="tooltip">{node.title}</Tooltip>;
 
 		if(node.rootNode){
 				return connectDropTarget(
@@ -214,7 +216,8 @@ class Node extends Component {
 				return connectDragSource(connectDropTarget(
 					<div>
 		            <li
-
+						onMouseOver={onMouseEnter}
+						onMouseOut={onMouseLeave}
 						id={"node_"+node.id}
 		                key={node.id}
 		                style={{
@@ -230,14 +233,17 @@ class Node extends Component {
 		                    type="checkbox"
 		                    onChange={testToggle}
 		                />
-						<span>
-							<FontAwesome
-								onClick={expandOrCollapse}
-						        name={icon}
-						        style={{ textShadow: '0 1px 0 rgba(0, 0, 0, 0.1)' }}
-						      />
-			                <small  > {node.title } </small>
-						</span>
+						<OverlayTrigger placement="right" overlay={tooltip}>
+							<span >
+								<FontAwesome
+									onClick={expandOrCollapse}
+									name={icon}
+									style={{ textShadow: '0 1px 0 rgba(0, 0, 0, 0.1)' }}
+								  />
+								<small  > {node.title } </small>
+							</span>
+
+						</OverlayTrigger>
 		                <ul  id={'children_node_'+node.id} style={{ listStyleType: 'none', display: visibility}}>
 		                    {children}
 		                </ul>

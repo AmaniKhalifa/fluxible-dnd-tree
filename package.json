@@ -28,10 +28,10 @@
   "dependencies": {
     "prop-types": "^15.6.0",
     "react": "^16.0.0",
+    "react-bootstrap": "^0.31.5",
     "react-dnd": "^2.5.4",
     "react-dnd-html5-backend": "^2.5.4",
     "react-dom": "^16.0.0",
-    "react-fontawesome": "^1.6.1",
-    "react-tooltip": "^3.4.0"
+    "react-fontawesome": "^1.6.1"
   }
 }
