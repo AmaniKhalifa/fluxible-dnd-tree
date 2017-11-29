@@ -14,7 +14,47 @@ const style = {
 	width: '20rem',
 }
 
+const getDropPos = (component, monitor) => {
+	const hoverBoundingRect = ReactDOM.findDOMNode(component).getBoundingClientRect();
 
+	// Get vertical middle
+	const nodeChildren = document.getElementById('children_node_'+component.props.node.id);
+	const nodeChildrenHeight = (nodeChildren) ? nodeChildren.offsetHeight : 0;
+
+	const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top - nodeChildrenHeight) / 2;
+	const hoverEightY = (component.props.node.type == 'search') ? 0 : (hoverBoundingRect.bottom - hoverBoundingRect.top - nodeChildrenHeight) / 8;
+
+
+	// Determine mouse position
+	const clientOffset = monitor.getClientOffset();
+
+	// Get pixels to the top
+	const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+
+	var dropPos = null;
+	// Dragging downwards
+	if (hoverClientY <= (hoverMiddleY - hoverEightY)) {
+		dropPos = 'before';
+		component.setState({'isHoverBefore': true});
+		component.setState({'isHoverAfter': false});
+
+	}
+
+	// Dragging upwards
+	else if (hoverClientY > (hoverMiddleY + hoverEightY )) {
+		dropPos = 'after';
+		component.setState({'isHoverBefore': false});
+		component.setState({'isHoverAfter': true});
+
+	}
+
+	else {
+		dropPos = 'into';
+		component.setState({'isHoverBefore': false});
+		component.setState({'isHoverAfter': false});
+	}
+	return dropPos;
+}
 
 const nodeSource = {
 	beginDrag(props) {
@@ -39,88 +79,14 @@ const nodeTarget = {
 		if(component.props.collapsed){
 			component.props.testToggle();
 		}
-		const hoverBoundingRect = ReactDOM.findDOMNode(component).getBoundingClientRect();
-
-		// Get vertical middle
-		const nodeChildren = document.getElementById('children_node_'+component.props.node.id);
-		const nodeChildrenHeight = (nodeChildren) ? nodeChildren.offsetHeight : 0;
-
-		const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top - nodeChildrenHeight) / 2;
-		const hoverEightY = (props.node.type == 'search') ? 0 : (hoverBoundingRect.bottom - hoverBoundingRect.top - nodeChildrenHeight) / 8;
-
-
-		// Determine mouse position
-		const clientOffset = monitor.getClientOffset();
-
-		// Get pixels to the top
-		const hoverClientY = clientOffset.y - hoverBoundingRect.top;
-
-		var dropPos = null;
-		// Dragging downwards
-		if (hoverClientY <= (hoverMiddleY - hoverEightY)) {
-			dropPos = 'before';
-			component.setState({'isHoverBefore': true});
-			component.setState({'isHoverAfter': false});
-
-		}
-
-		// Dragging upwards
-		else if (hoverClientY > (hoverMiddleY + hoverEightY )) {
-			dropPos = 'after';
-			component.setState({'isHoverBefore': false});
-			component.setState({'isHoverAfter': true});
-
-		}
-
-		else {
-			dropPos = 'into';
-			component.setState({'isHoverBefore': false});
-			component.setState({'isHoverAfter': false});
-		}
-		return dropPos;
-
-
+		return getDropPos(component, monitor);
     },
     drop(props, monitor, component) {
         // monitor.didDrop() checkes if the event was handled by a nested (child) node.
 		let didDrop = monitor.didDrop();
 		let isHoveringOnThisNode = monitor.isOver({shallow: true});
 		if(!didDrop){
-			// Determine rectangle on screen
-			const hoverBoundingRect = ReactDOM.findDOMNode(component).getBoundingClientRect();
-
-			// Get vertical middle
-			const nodeChildren = document.getElementById('children_node_'+component.props.node.id);
-			const nodeChildrenHeight = (nodeChildren) ? nodeChildren.offsetHeight : 0;
-
-			const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top - nodeChildrenHeight) / 2;
-			const hoverEightY = (props.node.type == 'search') ? 0 : (hoverBoundingRect.bottom - hoverBoundingRect.top - nodeChildrenHeight) / 8;
-
-			// Determine mouse position
-			const clientOffset = monitor.getClientOffset();
-
-			// Get pixels to the top
-			const hoverClientY = clientOffset.y - hoverBoundingRect.top;
-
-			var dropPos = null;
-			// Dragging downwards
-			if (hoverClientY <= (hoverMiddleY - hoverEightY)) {
-				console.log(" Before Node");
-				dropPos = 'before';
-			}
-
-			// Dragging upwards
-			else if (hoverClientY > (hoverMiddleY + hoverEightY)) {
-				console.log(" After Node");
-				dropPos = 'after';
-
-			}
-
-			else{
-				console.log(" Into Node");
-				dropPos = 'into';
-			}
-
+			var dropPos = getDropPos(component, monitor);
 
             // these (props which is the node that I dropped into) are available to the nodesource as monitor.getDropResult()
 			return {'props':props, 'dropPos': dropPos};
@@ -184,8 +150,7 @@ class Node extends Component {
 				return connectDragSource(connectDropTarget(
 					<div>
 		            <li
-						onMouseOver={onMouseEnter}
-						onMouseOut={onMouseLeave}
+
 						id={"node_"+node.id}
 		                key={node.id}
 		                style={{
@@ -201,7 +166,9 @@ class Node extends Component {
 		                    type="checkbox"
 		                    onChange={testToggle}
 		                />
-						<span data-tip data-for={'hover_node_'+node.id}>
+						<span data-tip data-for={'hover_node_'+node.id}
+							onMouseOver={onMouseEnter}
+							onMouseOut={onMouseLeave}>
 							<FontAwesome
 								onClick={expandOrCollapse}
 						        name={icon}
@@ -209,9 +176,10 @@ class Node extends Component {
 						      />
 			                <small  > {node.title } </small>
 						</span>
-						<ReactTooltip offset={{bottom:10, right: node.title.length*10 }} isCapture={false} event="mouseover" eventOff="mouseout" place="right" type="dark" effect="solid" id={'hover_node_'+node.id}>
+						{/* TODO adjudt tooltip position */}
+						{!isDragging && <ReactTooltip offset={{bottom:10, right: node.title.length*10 }} isCapture={false} event="mouseenter" eventOff="mouseleave" place="right" type="dark" effect="solid" id={'hover_node_'+node.id}>
 							{node.title}
-						</ReactTooltip>
+						</ReactTooltip>}
 		                <ul  id={'children_node_'+node.id} style={{ listStyleType: 'none', display: visibility}}>
 		                    {children}
 		                </ul>
@@ -241,7 +209,10 @@ export default class StatefulNode extends Component {
 
 	componentWillReceiveProps(nextProps){
 		this.setState({
-			collapsed: nextProps.collapsed
+			collapsed: nextProps.collapsed,
+			color: 'black',
+			hoverBefore: false,
+			hoverAfter: false
 		});
 	}
 
@@ -268,19 +239,20 @@ export default class StatefulNode extends Component {
 		});
 	}
 	onMouseEnter(e){
-		e.stopPropagation();
-		// e.nativeEvent.stopImmediatePropagation();
+		if(this.props.node.id == 5){
+			console.log("Mouse enter ");
+		}
 		this.setState({
 			color: 'red'
 		});
+		e.stopPropagation();
 	}
 
 	onMouseLeave(e){
-		e.stopPropagation();
-		// e.nativeEvent.stopImmediatePropagation();
 		this.setState({
 			color: 'black'
 		});
+		e.stopPropagation();
 	}
 
 	testToggle() {
