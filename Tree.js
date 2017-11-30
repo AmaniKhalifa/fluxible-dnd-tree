@@ -44,7 +44,23 @@ export default class Tree extends Component {
         return;
     }
 
-
+    isDescendant(node, id){
+        if(node.children){
+            let children = node.children;
+            for (let i = 0; i < children.length; i++) {
+                if (children[i].id === id ) {
+                    return true;
+                }
+            }
+            for (let i = 0; i < children.length; i++) {
+                let res = this.isDescendant(children[i], id);
+                if(res){
+                    return res;
+                }
+            }
+        }
+        return false;
+    }
     getParent = (node, id) => {
         if (node.children) {
             let children = node.children;
@@ -96,7 +112,7 @@ export default class Tree extends Component {
             for (var i = 0; node.children && i < node.children.length; i++) {
                   children.push(buildNode(node.children[i]));
             }
-            return <Node  collapsed={this.state.collapsed} addNode={this.addNode} node={node} > {node.children && children } </Node>;
+            return <Node  isDescendant={this.isDescendant} collapsed={this.state.collapsed} addNode={this.addNode} node={node} > {node.children && children } </Node>;
         };
 
         let nodes = [];

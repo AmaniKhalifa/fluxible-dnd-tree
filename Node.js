@@ -65,7 +65,8 @@ const nodeSource = {
         // preventing a node to be dropped inside itself
 		let hasDropTarget = droppedObj && droppedObj.props && droppedObj.props.node;
 		let droppedIntoItself = hasDropTarget && droppedObj.props.node.id === props.node.id;
-        if(hasDropTarget && !droppedIntoItself){
+		let isTargetDescendantFromSource = hasDropTarget && props.isDescendant(props.node, droppedObj.props.node.id);
+        if(hasDropTarget && !droppedIntoItself && !isTargetDescendantFromSource){
 			const droppedTo = droppedObj.props;
 			const dropPosition = droppedObj.dropPos;
 			props.addNode(props, droppedTo, dropPosition);
@@ -180,6 +181,7 @@ class Node extends Component {
         node: PropTypes.any.isRequired,
         children: PropTypes.node,
         addNode: PropTypes.func.isRequired,
+		isDescendant: PropTypes.func.isRequired,
         isHovering: PropTypes.bool.isRequired,
 		isHoverBefore: PropTypes.bool.isRequired,
 		isHoverAfter: PropTypes.bool.isRequired,
