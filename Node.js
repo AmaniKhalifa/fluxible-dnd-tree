@@ -11,8 +11,7 @@ const style = {
 	// border: '1px dashed gray',
 	marginBottom: '.5rem',
 	padding: '0.5rem 1rem',
-	margin: '0.0rem',
-	width: '20rem',
+	margin: '0.0rem'
 }
 
 const getDropPos = (component, monitor) => {
@@ -206,15 +205,13 @@ class Node extends Component {
 
 		if(node.rootNode){
 				return connectDropTarget(
-					<div>
-						<ul id={"node_"+node.id} style={{ listStyleType: 'none'}} >{children}</ul>
-						{ isHovering && <hr />}
+					<div style={{...shade, width: '100%'}}>
+						<ul id={"node_"+node.id} style={{ listStyleType: 'none', ...style}} >{children}</ul>
 					</div>
 
 		        );
 		}else{
 				return connectDragSource(connectDropTarget(
-					<div>
 		            <li
 						onMouseOver={onMouseEnter}
 						onMouseOut={onMouseLeave}
@@ -222,12 +219,14 @@ class Node extends Component {
 		                key={node.id}
 		                style={{
 		                    ...style,
-							...shade,
 							color,
 		                    opacity,
+							...shade,
 							...borderBottom,
 							...borderTop,
-		                    cursor: 'move'
+		                    cursor: 'move',
+							display: 'block',
+							width: '100%'
 		                }}
 		            >
 		                <input
@@ -250,7 +249,6 @@ class Node extends Component {
 
 		            </li>
 
-					</div>
 					,
 		        ));
 

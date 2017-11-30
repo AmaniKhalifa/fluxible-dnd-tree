@@ -10,7 +10,7 @@ export default class Tree extends Component {
           tree: [
               {title:'DummyNode', id:0, rootNode:true, children:[
                   {title: 'Root', id: 1, type:'folder', children: [
-                                                {title: 'Child', pid:1, id: 2, type:'folder', children:[ {title: ' Child 22', id: 3, type:'search'}]}
+                                                {title: 'Child', pid:1, id: 2, type:'folder', children:[ {title: ' Child 22 abc def ghi', id: 3, type:'search'}]}
                                         ]},
 
               {title: 'Empty', id: 4, type:'search'},
@@ -105,7 +105,7 @@ export default class Tree extends Component {
         }
 
 		return (
-			<div style={{ overflow: 'hidden', clear: 'both', margin: '0.5rem' }}>
+			<span >
                 <button onClick={() => {
                     this.setState({
                         collapsed: !this.state.collapsed
@@ -113,13 +113,13 @@ export default class Tree extends Component {
                 }}>
                     {this.state.collapsed ? 'Expand All' : 'Collapse All'}
                 </button>
-				<div style={{ float: 'left' }}>
-                    <ul style={{ listStyleType: 'none'}}>
-                        {nodes}
-                    </ul>
-				</div>
 
-			</div>
+                {/* <input type="text" id="uname" name="name"/> */}
+                <div style={{width: '100%'}}>
+                    {nodes}
+                </div>
+
+			</span>
 
 		)
 	}
