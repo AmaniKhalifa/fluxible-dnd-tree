@@ -105,7 +105,7 @@ export default class Tree extends Component {
         }
 
 		return (
-			<div style={{ overflow: 'hidden', clear: 'both', margin: '-.5rem' }}>
+			<div style={{ overflow: 'hidden', clear: 'both', margin: '0.5rem' }}>
                 <button onClick={() => {
                     this.setState({
                         collapsed: !this.state.collapsed

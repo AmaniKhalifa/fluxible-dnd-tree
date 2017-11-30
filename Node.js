@@ -9,8 +9,9 @@ import ItemTypes from './ItemTypes';
 
 const style = {
 	// border: '1px dashed gray',
-	padding: '0.5rem 1rem',
 	marginBottom: '.5rem',
+	padding: '0.5rem 1rem',
+	margin: '0.0rem',
 	width: '20rem',
 }
 
@@ -194,13 +195,12 @@ class Node extends Component {
 		let shade = (isHovering && !isDragging && !isHoverBefore && !isHoverAfter && node.type !=='search') ? {backgroundColor: '#e4dedd'} : {backgroundColor: 'transparent'};
 
 		let hoveringBeforeNode = isHoverBefore && isHovering && !isDragging;
-		let hoverBeforeVisibility = hoveringBeforeNode ? 'visible' : 'hidden';
+		let borderTop = (hoveringBeforeNode) ? {borderTop: '0.1rem solid'} : {borderTop: 'hidden'};
 
 		let hoveringAfterNode = isHoverAfter && isHovering && !isDragging;
-		let hoverAfterVisibility = hoveringAfterNode ? 'visible' : 'hidden';
+		let borderBottom = (hoveringAfterNode) ? {borderBottom: '0.1rem solid'} : {borderBottom: 'hidden'};
 
 		let visibility = (collapsed) ? 'none' : 'block';
-		let statusIcon = (collapsed) ? 'plus' : 'minus';
 		let icon = (!collapsed && node.type !== 'search' ) ? 'folder-open' : node.type;
 		const tooltip = <Tooltip id="tooltip">{node.title}</Tooltip>;
 
@@ -225,29 +225,28 @@ class Node extends Component {
 							...shade,
 							color,
 		                    opacity,
+							...borderBottom,
+							...borderTop,
 		                    cursor: 'move'
 		                }}
 		            >
-						<hr style={{visibility: hoverBeforeVisibility} } id="before"/>
 		                <input
 		                    type="checkbox"
 		                    onChange={testToggle}
 		                />
 						<OverlayTrigger placement="right" overlay={tooltip}>
-							<span >
+							<span  style={{padding: '0.0rem 0.5rem', border: '0.1rem'}} onClick={expandOrCollapse} >
 								<FontAwesome
-									onClick={expandOrCollapse}
 									name={icon}
 									style={{ textShadow: '0 1px 0 rgba(0, 0, 0, 0.1)' }}
 								  />
-								<small  > {node.title } </small>
+								<small> {node.title } </small>
 							</span>
 
 						</OverlayTrigger>
 		                <ul  id={'children_node_'+node.id} style={{ listStyleType: 'none', display: visibility}}>
 		                    {children}
 		                </ul>
-						<hr style={{visibility: hoverAfterVisibility}} id="after"/>
 
 		            </li>
 
