@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
+import { Modal, Button, InputGroup, FormControl} from 'react-bootstrap';
 import Node from './Node';
 
 @DragDropContext(HTML5Backend)
@@ -21,9 +22,30 @@ export default class Tree extends Component {
               ]}
               ]}
         ],
-        collapsed: false
+        collapsed: false,
+        modal: {show: false, enterButtonDisabled: true, input: ''},
+        lastId: 7
     };
 
+    addNew = () => {
+        this.addNode({'node': {title: this.state.modal.input, id: this.state.lastId + 1, type:'folder' }}, {'node': this.state.tree[0]}, 'into', true);
+        this.close();
+        this.setState({ lastId: this.state.lastId + 1 });
+
+    }
+    setModalState = (name) =>{
+        if(name && name != ''){
+            this.setState({ modal: {show: true, enterButtonDisabled: false, input: name} });
+        }else{
+            this.setState({ modal: {show: true, enterButtonDisabled: true, input: name } });
+        }
+    }
+    close = () =>{
+        this.setState({ modal: {show: false, enterButtonDisabled: true} });
+    }
+    open = () => {
+      this.setState({ modal: {show: true, enterButtonDisabled: true} });
+    }
 
     removeNode = (array, id) => {
         for (var i = 0; i < array.length; ++i) {
@@ -78,12 +100,13 @@ export default class Tree extends Component {
         }
 
     }
-    addNode = (node, parent, position) => {
+    addNode = (node, parent, position, isNew=false) => {
         parent = parent.node;
         node = node.node;
         // Not dropping before/after dummy root node
         if(!(parent.rootNode && position !== 'into')){
-            this.removeNode(this.state.tree, node.id);
+            if(!isNew)
+                this.removeNode(this.state.tree, node.id);
             if(position == 'into'){
                 if(!parent.children){
                     parent.children = [];
@@ -119,15 +142,32 @@ export default class Tree extends Component {
         for (let i = 0; i < this.state.tree.length; i++) {
             nodes.push(buildNode( this.state.tree[i] ));
         }
-
 		return (
 			<span >
+                <Modal show={this.state.modal.show} onHide={this.close}>
+                      <Modal.Header closeButton>
+                        <Modal.Title>Add Node</Modal.Title>
+                      </Modal.Header>
+                      <Modal.Body>
+                                <FormControl type="text" onChange={ (e) => {this.setModalState(e.target.value);} } placeholder="Folder Name"/>
+                      </Modal.Body>
+                      <Modal.Footer>
+                        <Button onClick={() => {this.addNew()}} disabled={this.state.modal.enterButtonDisabled } >Enter</Button>
+                      </Modal.Footer>
+                </Modal>
+
                 <button onClick={() => {
                     this.setState({
                         collapsed: !this.state.collapsed
                     });
                 }}>
                     {this.state.collapsed ? 'Expand All' : 'Collapse All'}
+                </button>
+
+                <button onClick={() => {
+                    this.open();
+                }}>
+                    Add Node
                 </button>
 
                 {/* <input type="text" id="uname" name="name"/> */}
