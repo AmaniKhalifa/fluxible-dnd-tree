@@ -76,9 +76,6 @@ const nodeSource = {
 
 const nodeTarget = {
 	hover(props, monitor, component) {
-		if(component.props.collapsed){
-			component.props.testToggle();
-		}
 		const hoverBoundingRect = ReactDOM.findDOMNode(component).getBoundingClientRect();
 
 		// Get vertical middle
@@ -174,7 +171,7 @@ class Node extends Component {
         connectDragSource: PropTypes.func.isRequired,
         connectDropTarget: PropTypes.func.isRequired,
         isDragging: PropTypes.bool.isRequired,
-        testToggle: PropTypes.func.isRequired,
+        select: PropTypes.func.isRequired,
 		expandOrCollapse: PropTypes.func.isRequired,
 		onMouseEnter: PropTypes.func.isRequired,
 		onMouseLeave: PropTypes.func.isRequired,
@@ -186,11 +183,11 @@ class Node extends Component {
 		isHoverBefore: PropTypes.bool.isRequired,
 		isHoverAfter: PropTypes.bool.isRequired,
 		collapsed: PropTypes.bool.isRequired,
-		color: PropTypes.any.isRequired
+		color: PropTypes.any.isRequired,
 	}
 
 	render() {
-        const { isDragging, connectDragSource, connectDropTarget, testToggle, node, children, isHovering,
+        const { isDragging, connectDragSource, connectDropTarget, select, node, children, isHovering,
 			isHoverBefore, isHoverAfter, collapsed, expandOrCollapse, onMouseLeave, onMouseEnter, color} = this.props;
         const opacity = isDragging ? 0.4 : 1;
 		let shade = (isHovering && !isDragging && !isHoverBefore && !isHoverAfter && node.type !=='search') ? {backgroundColor: '#e4dedd'} : {backgroundColor: 'transparent'};
@@ -232,8 +229,10 @@ class Node extends Component {
 		                }}
 		            >
 		                <input
+							id={"checkbox_node_"+node.id}
 		                    type="checkbox"
-		                    onChange={testToggle}
+							checked={ node.selected ? true: false}
+		                    onChange={select}
 		                />
 						<OverlayTrigger placement="right" overlay={tooltip}>
 							<span  style={{padding: '0.0rem 0.5rem', border: '0.1rem'}} onClick={expandOrCollapse} >
@@ -275,7 +274,7 @@ export default class StatefulNode extends Component {
 			collapsed: nextProps.collapsed,
 			color: 'black',
 			hoverBefore: false,
-			hoverAfter: false
+			hoverAfter: false,
 		});
 	}
 
@@ -284,6 +283,7 @@ export default class StatefulNode extends Component {
 			<Node
 				{...this.props}
 				node={this.props.node}
+				selected={this.props.node.selected}
 				isHoverBefore = {this.state.hoverBefore}
 				isHoverAfter = {this.state.hoverAfter}
 				collapsed = {this.state.collapsed}
@@ -291,7 +291,7 @@ export default class StatefulNode extends Component {
 				onMouseLeave= {(e) => this.onMouseLeave(e)}
 				expandOrCollapse = {(e) => this.changeCollapsedState(e)}
 				color = {this.state.color}
-				testToggle={() => this.testToggle()}
+				select={(e) => this.select(e)}
 			/>
 		)
 	}
@@ -315,9 +315,12 @@ export default class StatefulNode extends Component {
 		e.stopPropagation();
 	}
 
-	testToggle() {
-		//console.log("Toggle ...");
+
+	select(e) {
+		this.props.select(this.props.node, !this.props.node.selected);
+
 	}
+
 
 
 }

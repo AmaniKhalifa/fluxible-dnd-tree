@@ -9,16 +9,16 @@ export default class Tree extends Component {
 
     state = {
           tree: [
-              {title:'DummyNode', id:0, rootNode:true, children:[
-                  {title: 'Root', id: 1, type:'folder', children: [
-                                                {title: 'Child', pid:1, id: 2, type:'folder', children:[ {title: ' Child 22 abc def ghi', id: 3, type:'search'}]}
+              {title:'DummyNode', id:0, rootNode:true,  children:[
+                  {title: 'Root', id: 1, type:'folder', selected: false, children: [
+                                                {title: 'Child', selected: false, id: 2, type:'folder', children:[ {title: ' Child 22 abc def ghi', selected: false, id: 3, type:'search'}]}
                                         ]},
 
-              {title: 'Empty', id: 4, type:'search'},
+              {title: 'Empty', id: 4, type:'search', selected: false},
 
-              {title: 'Two Nodes', id: 5, type:'folder',  children: [
-                                {title: 'Node 1', id: 6, type: 'search'},
-                                {title: 'Node 2', id: 7, type: 'folder'}
+              {title: 'Two Nodes', selected: false, id: 5, type:'folder',  children: [
+                                {title: 'Node 1', selected: false, id: 6, type: 'search'},
+                                {title: 'Node 2', selected: false, id: 7, type: 'folder'}
               ]}
               ]}
         ],
@@ -43,28 +43,24 @@ export default class Tree extends Component {
     close = () =>{
         this.setState({ modal: {show: false, enterButtonDisabled: true} });
     }
-    open = () => {
+    openAddNodeModal = () => {
       this.setState({ modal: {show: true, enterButtonDisabled: true} });
     }
 
-    removeNode = (array, id) => {
-        for (var i = 0; i < array.length; ++i) {
+    removeNode = (array, ids) => {
+        for (var i = array.length-1; i >= 0; i--) {
             var obj = array[i];
-            if (obj.id === id) {
+            let indexOfFound = ids.indexOf(obj.id)
+            if ( indexOfFound > -1) {
                 array.splice(i, 1);
-                return true;
+                ids.splice(indexOfFound, 1);
             }
             else if (obj.children) {
-                if (this.removeNode(obj.children, id)) {
-                    if (obj.children.length === 0) {
-                        delete obj.children;
-                    }
-                    return true;
-                }
+                this.removeNode(obj.children, ids);
             }
         }
-        return;
     }
+
 
     isDescendant(node, id){
         if(node.children){
@@ -106,7 +102,7 @@ export default class Tree extends Component {
         // Not dropping before/after dummy root node
         if(!(parent.rootNode && position !== 'into')){
             if(!isNew)
-                this.removeNode(this.state.tree, node.id);
+                this.removeNode(this.state.tree, [node.id]);
             if(position == 'into'){
                 if(!parent.children){
                     parent.children = [];
@@ -129,13 +125,40 @@ export default class Tree extends Component {
 
     };
 
+    removeSelected = (array) =>{
+        for (var i = 0; i < array.length; i++) {
+            var obj = array[i];
+            if( obj.selected) {
+                array.splice(i, 1);
+            }
+            else if (obj.children) {
+                this.removeSelected(obj.children);
+            }
+        }
+    }
+
+    selectAllChildren = (node, checked) => {
+        node.selected = checked;
+        let children = node.children;
+        if(children){
+            for (var i = 0; i < children.length; i++) {
+                this.selectAllChildren(children[i], checked);
+            }
+        }
+    }
+    selectNode = (node, checked) => {
+        this.selectAllChildren(node, checked);
+        this.setState({
+            tree: this.state.tree
+        })
+    }
 	render() {
         const buildNode = (node) => {
             var children = [];
             for (var i = 0; node.children && i < node.children.length; i++) {
                   children.push(buildNode(node.children[i]));
             }
-            return <Node  isDescendant={this.isDescendant} collapsed={this.state.collapsed} addNode={this.addNode} node={node} > {node.children && children } </Node>;
+            return <Node  select={this.selectNode} isDescendant={this.isDescendant} collapsed={this.state.collapsed} addNode={this.addNode} node={node} > {node.children && children } </Node>;
         };
 
         let nodes = [];
@@ -165,11 +188,19 @@ export default class Tree extends Component {
                 </button>
 
                 <button onClick={() => {
-                    this.open();
+                    this.openAddNodeModal();
                 }}>
                     Add Node
                 </button>
 
+                <button onClick={() => {
+                    this.removeSelected(this.state.tree);
+                    this.setState({
+                        tree: this.state.tree
+                    });
+                }}>
+                    Remove Node
+                </button>
                 {/* <input type="text" id="uname" name="name"/> */}
                 <div style={{width: '100%'}}>
                     {nodes}
