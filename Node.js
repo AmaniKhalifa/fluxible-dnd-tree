@@ -76,81 +76,17 @@ const nodeSource = {
 
 const nodeTarget = {
 	hover(props, monitor, component) {
-		const hoverBoundingRect = ReactDOM.findDOMNode(component).getBoundingClientRect();
-
-		// Get vertical middle
-		const nodeChildren = document.getElementById('children_node_'+component.props.node.id);
-		const nodeChildrenHeight = (nodeChildren) ? nodeChildren.offsetHeight : 0;
-
-		const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top - nodeChildrenHeight) / 2;
-		const hoverEightY = (props.node.type == 'search') ? 0 : (hoverBoundingRect.bottom - hoverBoundingRect.top - nodeChildrenHeight) / 8;
-
-
-		// Determine mouse position
-		const clientOffset = monitor.getClientOffset();
-
-		// Get pixels to the top
-		const hoverClientY = clientOffset.y - hoverBoundingRect.top;
-
-		var dropPos = null;
-		// Dragging downwards
-		if (hoverClientY <= (hoverMiddleY - hoverEightY)) {
-			dropPos = 'before';
-			component.setState({'isHoverBefore': true});
-			component.setState({'isHoverAfter': false});
+		// Expanding a folder/project when a node is hovering on it
+		if(component.props.collapsed){
+			component.props.expandOrCollapse();
 		}
-
-		// Dragging upwards
-		else if (hoverClientY > (hoverMiddleY + hoverEightY )) {
-			dropPos = 'after';
-			component.setState({'isHoverBefore': false});
-			component.setState({'isHoverAfter': true});
-
-		}
-
-		else {
-			dropPos = 'into';
-			component.setState({'isHoverBefore': false});
-			component.setState({'isHoverAfter': false});
-		}
-		return dropPos;
+		return getDropPos(component, monitor);
     },
     drop(props, monitor, component) {
         // monitor.didDrop() checkes if the event was handled by a nested (child) node.
 		let didDrop = monitor.didDrop();
-		let isHoveringOnThisNode = monitor.isOver({shallow: true});
 		if(!didDrop){
-			const hoverBoundingRect = ReactDOM.findDOMNode(component).getBoundingClientRect();
-
-			// Get vertical middle
-			const nodeChildren = document.getElementById('children_node_'+component.props.node.id);
-			const nodeChildrenHeight = (nodeChildren) ? nodeChildren.offsetHeight : 0;
-
-			const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top - nodeChildrenHeight) / 2;
-			const hoverEightY = (props.node.type == 'search') ? 0 : (hoverBoundingRect.bottom - hoverBoundingRect.top - nodeChildrenHeight) / 8;
-
-
-			// Determine mouse position
-			const clientOffset = monitor.getClientOffset();
-
-			// Get pixels to the top
-			const hoverClientY = clientOffset.y - hoverBoundingRect.top;
-
-			var dropPos = null;
-			// Dragging downwards
-			if (hoverClientY <= (hoverMiddleY - hoverEightY)) {
-				dropPos = 'before';
-			}
-
-			// Dragging upwards
-			else if (hoverClientY > (hoverMiddleY + hoverEightY )) {
-				dropPos = 'after';
-			}
-
-			else {
-				dropPos = 'into';
-			}
-
+			let dropPos = getDropPos(component, monitor);
             // these (props which is the node that I dropped into) are available to the nodesource as monitor.getDropResult()
 			return {'props':props, 'dropPos': dropPos};
         }
