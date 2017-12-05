@@ -178,6 +178,7 @@ class Node extends Component {
         node: PropTypes.any.isRequired,
         children: PropTypes.node,
         addNode: PropTypes.func.isRequired,
+		hasSelectedChild: PropTypes.func.isRequired,
 		isDescendant: PropTypes.func.isRequired,
         isHovering: PropTypes.bool.isRequired,
 		isHoverBefore: PropTypes.bool.isRequired,
@@ -188,10 +189,11 @@ class Node extends Component {
 
 	render() {
         const { isDragging, connectDragSource, connectDropTarget, select, node, children, isHovering,
-			isHoverBefore, isHoverAfter, collapsed, expandOrCollapse, onMouseLeave, onMouseEnter, color} = this.props;
+			isHoverBefore, isHoverAfter, collapsed, expandOrCollapse, onMouseLeave, onMouseEnter, color, hasSelectedChild} = this.props;
         const opacity = isDragging ? 0.4 : 1;
 		let shade = (isHovering && !isDragging && !isHoverBefore && !isHoverAfter && node.type !=='search') ? {backgroundColor: '#e4dedd'} : {backgroundColor: 'transparent'};
 
+		let hasSelectedChildrenShade = (collapsed && hasSelectedChild(node)) ? {backgroundColor: '#e8dddc'} : {};
 		let hoveringBeforeNode = isHoverBefore && isHovering && !isDragging;
 		let borderTop = (hoveringBeforeNode) ? {borderTop: '0.1rem solid'} : {borderTop: 'hidden'};
 
@@ -221,6 +223,7 @@ class Node extends Component {
 							color,
 		                    opacity,
 							...shade,
+							...hasSelectedChildrenShade,
 							...borderBottom,
 							...borderTop,
 		                    cursor: 'move',
@@ -292,6 +295,7 @@ export default class StatefulNode extends Component {
 				expandOrCollapse = {(e) => this.changeCollapsedState(e)}
 				color = {this.state.color}
 				select={(e) => this.select(e)}
+				hasSelectedChild={(node) => this.props.hasSelectedChild(node)}
 			/>
 		)
 	}
@@ -318,7 +322,6 @@ export default class StatefulNode extends Component {
 
 	select(e) {
 		this.props.select(this.props.node, !this.props.node.selected);
-
 	}
 
 

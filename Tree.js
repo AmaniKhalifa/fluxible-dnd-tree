@@ -152,13 +152,25 @@ export default class Tree extends Component {
             tree: this.state.tree
         })
     }
+    hasSelectedChild = (node) =>{
+        let children = node.children;
+        if(children){
+            for (var i = 0; i < children.length; i++) {
+                if(children[i].selected){
+                    return true;
+                }else{
+                    this.hasSelectedChild(children[i]);
+                }
+            }
+        }
+    }
 	render() {
         const buildNode = (node) => {
             var children = [];
             for (var i = 0; node.children && i < node.children.length; i++) {
                   children.push(buildNode(node.children[i]));
             }
-            return <Node  select={this.selectNode} isDescendant={this.isDescendant} collapsed={this.state.collapsed} addNode={this.addNode} node={node} > {node.children && children } </Node>;
+            return <Node  hasSelectedChild={this.hasSelectedChild} select={this.selectNode} isDescendant={this.isDescendant} collapsed={this.state.collapsed} addNode={this.addNode} node={node} > {node.children && children } </Node>;
         };
 
         let nodes = [];
