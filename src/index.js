@@ -1,6 +1,7 @@
-import React, { Component } from 'react'
-import Tree from './Tree'
+import React from 'react';
 import ReactDOM from 'react-dom';
+import Tree from './Tree';
+
 
 ReactDOM.render(
   (<Tree />),

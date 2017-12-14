@@ -1,4 +1,4 @@
 {
-	"presets": ["stage-0", "react" ],
-     "plugins": ["transform-decorators-legacy"]
+	"presets": ["env", "react" ],
+	"plugins": ["transform-object-rest-spread"]
 }
