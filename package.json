@@ -23,7 +23,8 @@
     "eslint-plugin-jsx-a11y": "4.0.0",
     "eslint-plugin-react": "6.10.3",
     "webpack": "^3.8.1",
-    "webpack-dev-server": "^2.9.4"
+    "webpack-dev-server": "^2.9.4",
+	"react-fontawesome": "^1.6.1"
   },
   "dependencies": {
     "prop-types": "^15.6.0",
@@ -32,6 +33,7 @@
     "react-dnd": "^2.5.4",
     "react-dnd-html5-backend": "^2.5.4",
     "react-dom": "^16.0.0",
-    "react-fontawesome": "^1.6.1"
+    "react-redux": "^5.0.6",
+    "redux": "^3.7.2"
   }
 }

@@ -13,10 +13,9 @@ const style = {
 
 const getDropPos = (component, monitor) => {
 	const hoverBoundingRect = ReactDOM.findDOMNode(component).getBoundingClientRect();
-
 	// Get vertical middle
-	const nodeChildren = document.getElementById('children_node_' +
-		component.props.node.id);
+	const nodeChildren = document.getElementById(
+		`children_node_${component.props.node.id}`);
 	const nodeChildrenHeight = (nodeChildren) ? nodeChildren.offsetHeight : 0;
 	const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top -
 		nodeChildrenHeight) / 2;
@@ -36,20 +35,20 @@ const getDropPos = (component, monitor) => {
 	// Dragging downwards
 	if (hoverClientY <= (hoverMiddleY - hoverTolerance)) {
 		dropPos = 'before';
-		component.setState({ isHoverBefore: true });
-		component.setState({ isHoverAfter: false });
+		component.setState({ isHoveringBefore: true });
+		component.setState({ isHoveringAfter: false });
 	}
 	// Dragging upwards
 	else if (hoverClientY > (hoverMiddleY + hoverTolerance)) {
 		dropPos = 'after';
-		component.setState({ isHoverBefore: false });
-		component.setState({ isHoverAfter: true });
+		component.setState({ isHoveringBefore: false });
+		component.setState({ isHoveringAfter: true });
 	}
 
 	else {
 		dropPos = 'into';
-		component.setState({ isHoverBefore: false });
-		component.setState({ isHoverAfter: false });
+		component.setState({ isHoveringBefore: false });
+		component.setState({ isHoveringAfter: false });
 	}
 
 	return dropPos;
@@ -69,7 +68,7 @@ const nodeSource = {
 		if (hasTarget && !droppedIntoItself && !targetUnderSource) {
 			const droppedTo = droppedObj.props;
 			const dropPosition = droppedObj.dropPos;
-			props.addNode(props, droppedTo, dropPosition);
+			props.position(props, droppedTo, dropPosition);
 		}
 	},
 };
@@ -80,49 +79,68 @@ const nodeTarget = {
 		// if (component.props.collapsed) {
 		// 	component.props.expandOrCollapse();
 		// }
-		return getDropPos(component, monitor);
+		const position = getDropPos(component, monitor);
+		return position;
 	},
 	drop(props, monitor, component) {
         // monitor.didDrop() checkes if the event was handled by a nested (child) node.
 		const didDrop = monitor.didDrop();
 		if (!didDrop) {
 			const dropPos = getDropPos(component, monitor);
+			const canDrop = props.canDrop(monitor.getItem().node,
+			props.node, dropPos);
 			// these (props which is the node that I dropped into)
 			// are available to the nodesource as monitor.getDropResult()
-			return { props: props, dropPos: dropPos };
+			if (canDrop) {
+				return { props: props, dropPos: dropPos };
+			}
+			return undefined;
 		}
 		return undefined;
 	},
 };
 
 class Node extends Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			node: this.props.node,
+		};
+	}
+	componentWillReceiveProps(newProps) {
+		this.updateNode(newProps.node);
+	}
+	updateNode(node) {
+		this.setState({ node: node });
+	}
 	render() {
-		const { isDragging, connectDragSource, connectDropTarget, select, node, children,
-				isHovering, collapsed, isHoverBefore, isHoverAfter,
-				hasSelectedChild } = this.props;
+		const collapsed = this.props.collapsed ? this.props.collapsed : false;
+		const { isDragging, connectDragSource, connectDropTarget, children,
+				isHovering, isHoveringBefore, isHoveringAfter,
+				hasSelectedChild, nodeRenderer, canDrop } = this.props;
 		const opacity = isDragging ? 0.4 : 1;
-		const shade = (isHovering && !isDragging &&
-			isHoverBefore && isHoverAfter &&
-		node.type !== 'search') ? { backgroundColor: '#e4dedd' } :
-		{ backgroundColor: 'transparent' };
-
-		const hasSelectedChildrenShade = (collapsed && hasSelectedChild(node)) ?
+		const shade = (isHovering && !isDragging && !isHoveringBefore &&
+		!isHoveringAfter) ?
+		{ backgroundColor: '#e4dedd' } : { backgroundColor: 'transparent' };
+		const hasSelectedChildrenShade = (collapsed &&
+			hasSelectedChild(this.state.node)) ?
 		{ backgroundColor: '#e8dddc' } : {};
-		const hoveringBeforeNode = isHoverBefore && isHovering && !isDragging;
+		const hoveringBeforeNode = isHoveringBefore && isHovering && !isDragging;
 		const borderTop = (hoveringBeforeNode) ?
 		{ borderTop: '0.1rem solid' } : { borderTop: 'hidden' };
 
-		const hoveringAfterNode = isHoverAfter && isHovering && !isDragging;
+		const hoveringAfterNode = isHoveringAfter && isHovering && !isDragging;
 		const borderBottom = (hoveringAfterNode) ?
 		{ borderBottom: '0.1rem solid' } : { borderBottom: 'hidden' };
 
 		const visibility = (collapsed) ? 'none' : 'block';
+		const nodeJSX = nodeRenderer(this.state.node, this.updateNode.bind(this));
 
-		if (node.rootNode) {
+		if (this.state.node.rootNode) {
 			return connectDropTarget(
 				<div style={{ ...shade, width: '100%' }}>
 					<ul
-						id={'node_' + node.id}
+						id={`node_${this.state.node.id}`}
 						style={{ listStyleType: 'none', ...style }}
 					>
 						{children}
@@ -133,8 +151,8 @@ class Node extends Component {
 		else {
 			return connectDragSource(connectDropTarget(
 				<li
-					id={'node_' + node.id}
-					key={node.id}
+					id={`node_${this.state.node.id}`}
+					key={this.state.node.id}
 					style={{
 						...style,
 						opacity,
@@ -147,19 +165,9 @@ class Node extends Component {
 						width: '100%',
 					}}
 				>
-					<input
-						id={'checkbox_node_' + node.id}
-						type="checkbox"
-						checked={node.selected}
-						onChange={select}
-					/>
-					<span
-						style={{ padding: '0.0rem 0.5rem', border: '0.1rem' }}
-					>
-						<small> {node.title } </small>
-					</span>
+					{nodeJSX}
 					<ul
-						id={'children_node_' + node.id}
+						id={`children_node_${this.state.node.id}`}
 						style={{ listStyleType: 'none', display: visibility }}
 					>
 						{children}
@@ -176,23 +184,23 @@ Node.propTypes = {
 	connectDragSource: PropTypes.func.isRequired,
 	connectDropTarget: PropTypes.func.isRequired,
 	isDragging: PropTypes.bool.isRequired,
-	select: PropTypes.func.isRequired,
 	node: PropTypes.any.isRequired,
 	children: PropTypes.node,
-	addNode: PropTypes.func.isRequired,
-	hasSelectedChild: PropTypes.func.isRequired,
+	position: PropTypes.func.isRequired,
 	isDescendant: PropTypes.func.isRequired,
+	canDrop: PropTypes.func.isRequired,
 	isHovering: PropTypes.bool.isRequired,
-	isHoverAfter: PropTypes.bool,
-	isHoverBefore: PropTypes.bool,
-	collapsed: PropTypes.bool.isRequired,
+	isHoveringAfter: PropTypes.bool,
+	isHoveringBefore: PropTypes.bool,
+	collapsed: PropTypes.bool,
+	nodeRenderer: PropTypes.func.isRequired,
 };
 
 
 export default DropTarget(ItemTypes.NODE, nodeTarget, (connect, monitor) => ({
 	connectDropTarget: connect.dropTarget(),
-	isHovering: monitor.isOver({ shallow: true })
+	isHovering: monitor.isOver({ shallow: true }),
 }))(DragSource(ItemTypes.NODE, nodeSource, (connect, monitor) => ({
 	connectDragSource: connect.dragSource(),
-	isDragging: monitor.isDragging()
+	isDragging: monitor.isDragging(),
 }))(Node));
