@@ -5,7 +5,7 @@ import Node from './Node';
 
 class Tree extends Component {
 
-	constructor(props){
+	constructor(props) {
 		super(props);
 		this.state = {
 			tree: [
@@ -48,14 +48,30 @@ class Tree extends Component {
 		return false;
 	}
 
-	position(node, hovered, position) {
+	cancelDrop() {
+		const action = {
+			type: 'CANCEL_DROP',
+		}
+		this.props.dispatch(action);
+	}
+	drop(dragged, hovered, position) {
 		const action = {
 			type: 'DROP',
-			node: node.node,
+			dragged: dragged.node,
 			hovered: hovered.node,
 			position: position,
 		};
-		return this.props.dispatch(action);
+		this.props.dispatch(action);
+	}
+	hover(dragged, hovered, position) {
+		const action = {
+			type: 'HOVER',
+			dragged: dragged.node,
+			hovered: hovered.node,
+			position: position,
+		};
+		this.props.dispatch(action);
+
 	}
 
 	render() {
@@ -66,8 +82,9 @@ class Tree extends Component {
 			}
 			return (<Node
 				isDescendant={this.isDescendant}
-				position={this.position.bind(this)}
-				canDrop={this.props.canDrop}
+				cancelDrop={this.cancelDrop.bind(this)}
+				drop={this.drop.bind(this)}
+				hover={this.hover.bind(this)}
 				node={node}
 				nodeRenderer={this.props.renderNode}
 			> {node.children && children }
@@ -84,5 +101,7 @@ class Tree extends Component {
 			</span>);
 	}
 }
-export const DNDTree = DragDropContext(HTML5Backend)(Tree);
-export default DNDTree;
+Tree.defaultProps = {
+	dispatch() {},
+};
+export default DragDropContext(HTML5Backend)(Tree);

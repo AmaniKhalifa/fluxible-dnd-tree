@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-	entry: './examples/index.js',
+	entry: './examples/HoverEffect.js',
 	output: {
 		path: path.resolve(__dirname, 'build'),
 		filename: 'app.bundle.js',

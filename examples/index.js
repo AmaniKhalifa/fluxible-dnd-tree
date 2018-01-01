@@ -42,15 +42,24 @@ const store = createStore(reducer, state);
 function reducer(state, action) {
 	switch (action.type) {
 	case 'DROP':
-		console.log('Drop Action recieved ...', state.tree);
+		// console.log('DROP Action recieved ...', state.tree);
 		state.tree = positionNode(state.tree, action);
 		return state;
 	case 'HOVER':
-		console.log('Drop Action recieved ...');
+		console.log('HOVER Action recieved ...');
+		state.tree = setHoverEffects(state.tree, action);
 		return state;
 	default:
 		return state;
 	}
+}
+
+function setHoverEffects(state, action) {
+	// let { position } = action;
+	// let hovered = ReactDOM.li({ className: 'hover' });
+	// let dragged = ReactDOM.li({ className: 'drag' });
+	// hovered.classList.add(position);
+	return state;
 }
 
 function removeNode(array, ids) {
@@ -87,7 +96,7 @@ function getParent(array, id) {
 }
 function positionNode(tree, action) {
 	let treeCopy = Object.assign([], tree);
-	replaceNode(treeCopy, action.node, action.hovered, action.position);
+	replaceNode(treeCopy, action.dragged, action.hovered, action.position);
 	return treeCopy;
 }
 

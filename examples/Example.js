@@ -6,6 +6,11 @@ export default class Example extends Component {
 	componentWillReceiveProps(newProps) {
 		this.props = newProps;
 	}
+	canDrop(node, hovered, position) {
+		if (hovered.type === 'search' && position === 'into') { return false; }
+
+		return true;
+	}
 	renderNode(data, updateData) {
 		const select = () => {
 			data.selected = !data.selected;
@@ -32,11 +37,6 @@ export default class Example extends Component {
 		return node;
 	}
 
-	canDrop(node, hovered, position) {
-		if (hovered.type === 'search' && position === 'into') { return false; }
-
-		return true;
-	}
 	render() {
 		const { tree, dispatch } = this.props;
 		return (
@@ -48,4 +48,18 @@ export default class Example extends Component {
 			/>
 		);
 	}
+}
+
+
+export function ExampleNode({ data }) {
+	return (
+		<span style={{ padding: '0.0rem 0.5rem', border: '0.1rem' }} >
+			<FontAwesome
+				name={data.type}
+				style={{ padding: '0.0rem 0.5rem',
+					textShadow: '0 1px 0 rgba(0, 0, 0, 0.1)' }}
+			/>
+			<small>{data.title}</small>
+		</span>
+	);
 }
