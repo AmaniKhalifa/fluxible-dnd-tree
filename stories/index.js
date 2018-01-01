@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import { storiesOf } from '@kadira/storybook';
-import FontAwesome from 'react-fontawesome';
-import { ExampleNode } from '../examples/Example';
 import { createStore } from 'redux';
+import { ExampleNode } from '../examples/Example';
 import Tree from '../src/Tree';
 import './css/styles.css';
 import './css/font-awesome.min.css';
@@ -110,9 +109,7 @@ function replaceNode(tree, node, hovered, position) {
 		if (!hovered.children) {
 			hovered.children = [];
 		}
-		console.log("Node ...", node);
 		hovered.children.push(node);
-		console.log("Hovered ", hovered);
 	}
 	else {
 		const t = getParent(tree, hovered.id);
@@ -151,7 +148,6 @@ function dropNode(nodes, action) {
 	const newDraggedNode = getNodeById(treeCopy, action.dragged.id);
 
 	replaceNode(treeCopy, newDraggedNode, newHoveredNode, action.position);
-	console.log("Tree copy is ", treeCopy);
 	return treeCopy;
 }
 function removeHover(nodes) {
@@ -215,28 +211,46 @@ storiesOf('Drag and Drop', module).
 		return (
 			<Tree
 				tree={state.tree}
-				renderNode={(nodeData) =>  <ExampleNode select={() => console.log('Maybe next time')} data={nodeData} /> }
+				renderNode={
+				(nodeData) => <ExampleNode
+					select={() => console.log('Maybe next time')}
+					data={nodeData}
+				/>
+			}
 			/>
 
-	);}).
+		);
+	}).
 		add('Hover after rendering', () => {
 			state.tree[0].children[1].hover = 'after';
 			return (
 				<Tree
 					tree={state.tree}
-					renderNode={(nodeData) =>  <ExampleNode select={() => console.log('Maybe next time')} data={nodeData} /> }
+					renderNode={
+					(nodeData) => <ExampleNode
+						select={() => console.log('Maybe next time')}
+						data={nodeData}
+					/>
+				}
 				/>
 
-		);}).
+			);
+		}).
 			add('Hover In', () => {
 				state.tree[0].children[1].hover = 'in';
 				return (
 					<Tree
 						tree={state.tree}
-						renderNode={(nodeData) =>  <ExampleNode select={() => console.log('Maybe next time')} data={nodeData} /> }
+						renderNode={
+						(nodeData) => <ExampleNode
+							select={() => console.log('Maybe next time')}
+							data={nodeData}
+						/>
+					}
 					/>
 
-			);});
+				);
+			});
 
 storiesOf('Interactive Tree', module).
 		add('DND Tree', () => {
@@ -248,9 +262,9 @@ storiesOf('Interactive Tree', module).
 						dispatch={store.dispatch}
 						renderNode={
 						(nodeData) => <ExampleNode
-								select={() => console.log('Maybe next time')}
-								data={nodeData}
-										/>
+							select={() => console.log('Maybe next time')}
+							data={nodeData}
+						/>
 									}
 					/>
 				</ReduxWrapper>

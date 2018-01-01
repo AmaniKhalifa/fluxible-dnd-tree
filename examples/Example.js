@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import Tree from '../src/Tree';
 import FontAwesome from 'react-fontawesome';
+import Tree from '../src/Tree';
 
 export default class Example extends Component {
 	componentWillReceiveProps(newProps) {
