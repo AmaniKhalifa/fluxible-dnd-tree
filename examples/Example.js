@@ -63,3 +63,34 @@ export function ExampleNode({ data }) {
 		</span>
 	);
 }
+
+export function ExampleNodeCollapse({ data}) {
+	return (
+		<span style={{ padding: '0.0rem 0.5rem', border: '0.1rem' }} >
+			<FontAwesome
+				name={data.type}
+				style={{ padding: '0.0rem 0.5rem',
+					textShadow: '0 1px 0 rgba(0, 0, 0, 0.1)' }}
+			/>
+			<small>{data.title}</small>
+		</span>
+	);
+}
+export function ExampleNodeSelection({ data, select}) {
+	return (
+		<span style={{ padding: '0.0rem 0.5rem', border: '0.1rem' }} >
+			<input
+				id={`checkbox_node_${data.id}`}
+				type="checkbox"
+				checked={data.selected}
+				onChange={select}
+			/>
+			<FontAwesome
+				name={data.type}
+				style={{ padding: '0.0rem 0.5rem',
+					textShadow: '0 1px 0 rgba(0, 0, 0, 0.1)' }}
+			/>
+			<small>{data.title}</small>
+		</span>
+	);
+}

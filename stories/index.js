@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { storiesOf } from '@kadira/storybook';
 import { createStore } from 'redux';
-import { ExampleNode } from '../examples/Example';
+import { ExampleNode, ExampleNodeSelection } from '../examples/Example';
 import Tree from '../src/Tree';
 import './css/styles.css';
 import './css/font-awesome.min.css';
@@ -52,24 +52,28 @@ const store = createStore(reducer, state);
 
 function reducer(state, action) {
 	switch (action.type) {
+	case 'SELECT':
+		state = Object.assign({}, state, { tree: selectNode(state.tree, action) });
+		return state;
 	case 'CANCEL_DROP':
-		console.log('CANCEL DROP Action recieved ...');
 		state = Object.assign({}, state, { tree: removeAllEffects(state.tree) });
 		return state;
 	case 'DROP':
-		console.log('DROP Action recieved ...', action);
 		state = Object.assign({}, state, { tree: dropNode(state.tree, action) });
-		console.warn(state.tree);
 		return state;
 	case 'HOVER':
-		console.log('HOVER Action recieved ...');
 		state = Object.assign({}, state, { tree: setHoverEffects(state.tree, action) });
 		return state;
 	default:
 		return state;
 	}
 }
-
+function selectNode(nodes, action) {
+	const treeCopy = Object.assign([], nodes);
+	const selectedNode = getNodeById(treeCopy, action.selected.id);
+	selectedNode.selected = !selectedNode.selected;
+	return treeCopy;
+}
 function removeNode(array, ids) {
 	for (let i = array.length - 1; i >= 0; i--) {
 		const obj = array[i];
@@ -263,6 +267,29 @@ storiesOf('Interactive Tree', module).
 						renderNode={
 						(nodeData) => <ExampleNode
 							select={() => console.log('Maybe next time')}
+							data={nodeData}
+						/>
+									}
+					/>
+				</ReduxWrapper>
+			);
+		}).
+		add('Select Node', () => {
+			return (
+				<ReduxWrapper
+					subscribe={store.subscribe}
+					tree={store.getState().tree}>
+					<Tree
+						dispatch={store.dispatch}
+						renderNode={
+						(nodeData) => <ExampleNodeSelection
+							select={() => {
+								const action = {
+									type: 'SELECT',
+									selected: nodeData
+								};
+								store.dispatch(action);
+							}}
 							data={nodeData}
 						/>
 									}
