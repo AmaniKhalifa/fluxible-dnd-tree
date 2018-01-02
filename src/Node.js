@@ -151,6 +151,8 @@ class Node extends Component {
 					>
 						{nodeJSX}
 						<ul
+							className={'children'+
+							(node.collapsed ? ' collapsed' : '')}
 							id={`children_node_${node.id}`}
 							style={{ listStyleType: 'none', display: visibility }}
 						>

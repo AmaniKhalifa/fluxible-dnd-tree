@@ -13,45 +13,54 @@ const state = {
 			id: 1,
 			type: 'folder',
 			selected: false,
+			collapsed: false,
 			children: [ { title: 'Child',
 				selected: false,
+				collapsed: false,
 				id: 2,
 				type: 'folder',
 				children: [ {
 					title: 'Child 22 abc def ghi',
 					selected: false,
+					collapsed: false,
 					id: 3,
 					type: 'search',
 				} ],
 			}, {
 				title: 'Child Hovered Before',
 				selected: false,
+				collapsed: false,
 				id: 8,
 				type: 'folder',
 			} ] },
-			{ title: 'Empty', id: 4, type: 'search', selected: false },
+			{ title: 'Empty', id: 4, type: 'search', selected: false, collapsed: false },
 		{ title: 'Two Nodes',
 			selected: false,
+			collapsed: false,
 			id: 5,
 			type: 'folder',
 			children: [
 				{ title: 'Node 1',
 					selected: false,
+					collapsed: false,
 					id: 6,
 					type: 'search' },
 				{ title: 'Node 2',
 					selected: false,
+					collapsed: false,
 					id: 7,
 					type: 'folder' },
 			] },
-	],
-	collapsed: false,
+	]
 };
 
 const store = createStore(reducer, state);
 
 function reducer(state, action) {
 	switch (action.type) {
+	case 'COLLAPSE':
+		state = Object.assign({}, state, { tree: collapseNode(state.tree, action) });
+		return state;
 	case 'SELECT':
 		state = Object.assign({}, state, { tree: selectNode(state.tree, action) });
 		return state;
@@ -68,6 +77,13 @@ function reducer(state, action) {
 		return state;
 	}
 }
+function collapseNode(nodes, action) {
+	const treeCopy = Object.assign([], nodes);
+	const collapsedNode = getNodeById(treeCopy, action.collapsed.id);
+	collapsedNode.collapsed = !collapsedNode.collapsed;
+	return treeCopy;
+}
+
 function selectNode(nodes, action) {
 	const treeCopy = Object.assign([], nodes);
 	const selectedNode = getNodeById(treeCopy, action.selected.id);
@@ -287,6 +303,29 @@ storiesOf('Interactive Tree', module).
 								const action = {
 									type: 'SELECT',
 									selected: nodeData
+								};
+								store.dispatch(action);
+							}}
+							data={nodeData}
+						/>
+									}
+					/>
+				</ReduxWrapper>
+			);
+		}).
+		add('Expand/Collapse Node', () => {
+			return (
+				<ReduxWrapper
+					subscribe={store.subscribe}
+					tree={store.getState().tree}>
+					<Tree
+						dispatch={store.dispatch}
+						renderNode={
+						(nodeData) => <ExampleNode
+							click={() => {
+								const action = {
+									type: 'COLLAPSE',
+									collapsed: nodeData
 								};
 								store.dispatch(action);
 							}}

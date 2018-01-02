@@ -12,3 +12,7 @@
 .node.drag {
 	opacity: 0.4
 }
+
+.children.collapsed {
+	display: none !important;
+}

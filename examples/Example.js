@@ -51,11 +51,12 @@ export default class Example extends Component {
 }
 
 
-export function ExampleNode({ data }) {
+export function ExampleNode({ data, click }) {
+	const icon = (!data.collapsed && data.type !== 'search') ? 'folder-open' : data.type;
 	return (
-		<span style={{ padding: '0.0rem 0.5rem', border: '0.1rem' }} >
+		<span onClick={click} style={{ padding: '0.0rem 0.5rem', border: '0.1rem' }} >
 			<FontAwesome
-				name={data.type}
+				name={icon}
 				style={{ padding: '0.0rem 0.5rem',
 					textShadow: '0 1px 0 rgba(0, 0, 0, 0.1)' }}
 			/>
