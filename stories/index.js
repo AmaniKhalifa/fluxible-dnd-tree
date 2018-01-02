@@ -7,7 +7,7 @@ import './css/styles.css';
 import './css/font-awesome.min.css';
 
 
-const state = {
+const initState = {
 	tree: [
 		{ title: 'Root',
 			id: 1,
@@ -27,7 +27,7 @@ const state = {
 					type: 'search',
 				} ],
 			}, {
-				title: 'Child Hovered Before',
+				title: 'Hovered Child',
 				selected: false,
 				collapsed: false,
 				id: 8,
@@ -54,7 +54,10 @@ const state = {
 	]
 };
 
-const store = createStore(reducer, state);
+const store = createStore(reducer, initState);
+const DNDstore = createStore(reducer, initState);
+const selectionStore = createStore(reducer, initState);
+const ExpandCollapseStore = createStore(reducer, initState);
 
 function reducer(state, action) {
 	switch (action.type) {
@@ -77,25 +80,25 @@ function reducer(state, action) {
 		return state;
 	}
 }
-function collapseNode(nodes, action) {
-	const treeCopy = Object.assign([], nodes);
+function collapseNode(tree, action) {
+	const treeCopy = Object.assign([], tree);
 	const collapsedNode = getNodeById(treeCopy, action.collapsed.id);
 	collapsedNode.collapsed = !collapsedNode.collapsed;
 	return treeCopy;
 }
 
-function selectNode(nodes, action) {
-	const treeCopy = Object.assign([], nodes);
+function selectNode(tree, action) {
+	const treeCopy = Object.assign([], tree);
 	const selectedNode = getNodeById(treeCopy, action.selected.id);
 	selectedNode.selected = !selectedNode.selected;
 	return treeCopy;
 }
-function removeNode(array, ids) {
-	for (let i = array.length - 1; i >= 0; i--) {
-		const obj = array[i];
+function removeNode(nodes, ids) {
+	for (let i = nodes.length - 1; i >= 0; i--) {
+		const obj = nodes[i];
 		const indexOfFound = ids.indexOf(obj.id);
 		if (indexOfFound > -1) {
-			array.splice(i, 1);
+			nodes.splice(i, 1);
 			ids.splice(indexOfFound, 1);
 		}
 		else if (obj.children) {
@@ -103,9 +106,9 @@ function removeNode(array, ids) {
 		}
 	}
 }
-function getParent(array, id) {
-	for (let i = 0; i < array.length; i++) {
-		const node = array[i];
+function getParent(nodes, id) {
+	for (let i = 0; i < nodes.length; i++) {
+		const node = nodes[i];
 		if (node.children) {
 			const children = node.children;
 			for (let i = 0; i < children.length; i++) {
@@ -123,51 +126,51 @@ function getParent(array, id) {
 	}
 }
 
-function replaceNode(tree, node, hovered, position) {
-	removeNode(tree, [ node.id ]);
+function replaceNode(nodes, dragged, hovered, position) {
+	removeNode(nodes, [ dragged.id ]);
 	if (position === 'into') {
 		if (!hovered.children) {
 			hovered.children = [];
 		}
-		hovered.children.push(node);
+		hovered.children.push(dragged);
 	}
 	else {
-		const t = getParent(tree, hovered.id);
+		const t = getParent(nodes, hovered.id);
 		if (t) {
 			const tNode = t.node;
 			const tIndex = t.index;
 			if (position === 'before') {
-				tNode.children.splice(tIndex, 0, node);
+				tNode.children.splice(tIndex, 0, dragged);
 			}
 			else {
-				tNode.children.splice(tIndex + 1, 0, node);
+				tNode.children.splice(tIndex + 1, 0, dragged);
 			}
 		}
 		else {
-			const tIndex = tree.findIndex(obj => obj.id === hovered.id);
+			const tIndex = nodes.findIndex(obj => obj.id === hovered.id);
 			if (position === 'before') {
-				tree.splice(tIndex, 0, node);
+				nodes.splice(tIndex, 0, dragged);
 			}
 			else {
-				tree.splice(tIndex + 1, 0, node);
+				nodes.splice(tIndex + 1, 0, dragged);
 			}
 		}
 	}
 }
-function canDrop(node, hovered, position) {
+function canDrop(dragged, hovered, position) {
 	if (hovered.type === 'search' && position === 'into') { return false; }
 
 	return true;
 }
-function dropNode(nodes, action) {
+function dropNode(tree, action) {
 	if (!canDrop(action.dragged, action.hovered, action.position)) {
-		return nodes;
+		return tree;
 	}
-	const treeCopy = removeAllEffects(Object.assign([], nodes));
-	const newHoveredNode = getNodeById(treeCopy, action.hovered.id);
-	const newDraggedNode = getNodeById(treeCopy, action.dragged.id);
+	const treeCopy = removeAllEffects(Object.assign([], tree));
+	const hoveredNode = getNodeById(treeCopy, action.hovered.id);
+	const draggedNode = getNodeById(treeCopy, action.dragged.id);
 
-	replaceNode(treeCopy, newDraggedNode, newHoveredNode, action.position);
+	replaceNode(treeCopy, draggedNode, hoveredNode, action.position);
 	return treeCopy;
 }
 function removeHover(nodes) {
@@ -200,6 +203,7 @@ function setHoverEffects(tree, action) {
 		return treeCopy;
 	}
 	const newHoveredNode = getNodeById(treeCopy, action.hovered.id);
+	newHoveredNode.collapsed = false;
 	newHoveredNode.hover = action.position;
 	return treeCopy;
 }
@@ -208,9 +212,9 @@ function setHoverEffects(tree, action) {
 class ReduxWrapper extends Component {
 	constructor(props) {
 		super(props);
-		this.state = props;
+		this.state = { tree: props.tree };
 		props.subscribe(() => {
-			const state = store.getState();
+			const state = props.store.getState();
 			this.setState(state);
 		});
 	}
@@ -227,10 +231,16 @@ class ReduxWrapper extends Component {
 
 storiesOf('Drag and Drop', module).
 	add('Hover before rendering', () => {
-		state.tree[0].children[1].hover = 'before';
+		const action = {
+			type: 'HOVER',
+			dragged: store.getState().tree[0].children[2],
+			hovered: store.getState().tree[0].children[1],
+			position: 'before',
+		};
+		store.dispatch(action);
 		return (
 			<Tree
-				tree={state.tree}
+				tree={store.getState().tree}
 				renderNode={
 				(nodeData) => <ExampleNode
 					select={() => console.log('Maybe next time')}
@@ -242,10 +252,16 @@ storiesOf('Drag and Drop', module).
 		);
 	}).
 		add('Hover after rendering', () => {
-			state.tree[0].children[1].hover = 'after';
+			const action = {
+				type: 'HOVER',
+				dragged: store.getState().tree[0].children[2],
+				hovered: store.getState().tree[0].children[1],
+				position: 'after',
+			};
+			store.dispatch(action);
 			return (
 				<Tree
-					tree={state.tree}
+					tree={store.getState().tree}
 					renderNode={
 					(nodeData) => <ExampleNode
 						select={() => console.log('Maybe next time')}
@@ -257,10 +273,16 @@ storiesOf('Drag and Drop', module).
 			);
 		}).
 			add('Hover In', () => {
-				state.tree[0].children[1].hover = 'in';
+				const action = {
+					type: 'HOVER',
+					dragged: store.getState().tree[0].children[2],
+					hovered: store.getState().tree[0].children[1],
+					position: 'into',
+				};
+				store.dispatch(action);
 				return (
 					<Tree
-						tree={state.tree}
+						tree={store.getState().tree}
 						renderNode={
 						(nodeData) => <ExampleNode
 							select={() => console.log('Maybe next time')}
@@ -276,10 +298,11 @@ storiesOf('Interactive Tree', module).
 		add('DND Tree', () => {
 			return (
 				<ReduxWrapper
-					subscribe={store.subscribe}
-					tree={store.getState().tree}>
+					store={DNDstore}
+					subscribe={DNDstore.subscribe}
+					tree={DNDstore.getState().tree}>
 					<Tree
-						dispatch={store.dispatch}
+						dispatch={DNDstore.dispatch}
 						renderNode={
 						(nodeData) => <ExampleNode
 							select={() => console.log('Maybe next time')}
@@ -293,10 +316,11 @@ storiesOf('Interactive Tree', module).
 		add('Select Node', () => {
 			return (
 				<ReduxWrapper
-					subscribe={store.subscribe}
-					tree={store.getState().tree}>
+					store={selectionStore}
+					subscribe={selectionStore.subscribe}
+					tree={selectionStore.getState().tree}>
 					<Tree
-						dispatch={store.dispatch}
+						dispatch={selectionStore.dispatch}
 						renderNode={
 						(nodeData) => <ExampleNodeSelection
 							select={() => {
@@ -304,7 +328,7 @@ storiesOf('Interactive Tree', module).
 									type: 'SELECT',
 									selected: nodeData
 								};
-								store.dispatch(action);
+								selectionStore.dispatch(action);
 							}}
 							data={nodeData}
 						/>
@@ -316,10 +340,11 @@ storiesOf('Interactive Tree', module).
 		add('Expand/Collapse Node', () => {
 			return (
 				<ReduxWrapper
-					subscribe={store.subscribe}
-					tree={store.getState().tree}>
+					store={ExpandCollapseStore}
+					subscribe={ExpandCollapseStore.subscribe}
+					tree={ExpandCollapseStore.getState().tree}>
 					<Tree
-						dispatch={store.dispatch}
+						dispatch={ExpandCollapseStore.dispatch}
 						renderNode={
 						(nodeData) => <ExampleNode
 							click={() => {
@@ -327,7 +352,7 @@ storiesOf('Interactive Tree', module).
 									type: 'COLLAPSE',
 									collapsed: nodeData
 								};
-								store.dispatch(action);
+								ExpandCollapseStore.dispatch(action);
 							}}
 							data={nodeData}
 						/>
