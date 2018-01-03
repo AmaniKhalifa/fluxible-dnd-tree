@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { storiesOf } from '@kadira/storybook';
 import { createStore } from 'redux';
+import { Map, List, fromJS } from 'immutable';
 import { ExampleNode, ExampleNodeSelection } from '../examples/Example';
 import Tree from '../src/Tree';
 import './css/styles.css';
@@ -60,52 +61,56 @@ const selectionStore = createStore(reducer, initState);
 const ExpandCollapseStore = createStore(reducer, initState);
 
 function reducer(state, action) {
+	let newState = {};
 	switch (action.type) {
 	case 'COLLAPSE':
-		state = Object.assign({}, state, { tree: collapseNode(state.tree, action) });
-		return state;
+		newState = Object.assign({}, state, { tree:
+			collapseNode(fromJS(state.tree), fromJS(action)).toJS() });
+		return newState;
 	case 'SELECT':
-		state = Object.assign({}, state, { tree: selectNode(state.tree, action) });
-		return state;
+		newState = Object.assign({}, state, { tree:
+			selectNode(fromJS(state.tree), fromJS(action)).toJS() });
+		return newState;
 	case 'CANCEL_DROP':
-		state = Object.assign({}, state, { tree: removeAllEffects(state.tree) });
-		return state;
+		newState = Object.assign({}, state, { tree:
+			removeAllEffects(fromJS(state.tree)).toJS() });
+		return newState;
 	case 'DROP':
-		state = Object.assign({}, state, { tree: dropNode(state.tree, action) });
-		return state;
+		newState = Object.assign({}, state, { tree:
+			dropNode(fromJS(state.tree), fromJS(action)).toJS() });
+		return newState;
 	case 'HOVER':
-		state = Object.assign({}, state, { tree: setHoverEffects(state.tree, action) });
-		return state;
+		newState = Object.assign({}, state, { tree:
+			setHoverEffects(fromJS(state.tree), fromJS(action)).toJS() });
+		return newState;
 	default:
 		return state;
 	}
 }
 function collapseNode(tree, action) {
-	const treeCopy = Object.assign([], tree);
-	const collapsedNode = getNodeById(treeCopy, action.collapsed.id);
-	collapsedNode.collapsed = !collapsedNode.collapsed;
-	return treeCopy;
+	const newNode = action.get('collapsed').set(
+		'collapsed', !action.getIn([ 'collapsed', 'collapsed' ]));
+	return replaceNode(tree, newNode);
 }
 
 function selectNode(tree, action) {
-	const treeCopy = Object.assign([], tree);
-	const selectedNode = getNodeById(treeCopy, action.selected.id);
-	selectedNode.selected = !selectedNode.selected;
-	return treeCopy;
+	const newNode = action.get('selected').set(
+		'selected', !action.getIn([ 'selected', 'selected' ]));
+	return replaceNode(tree, newNode);
 }
-function removeNode(nodes, ids) {
-	for (let i = nodes.length - 1; i >= 0; i--) {
-		const obj = nodes[i];
-		const indexOfFound = ids.indexOf(obj.id);
-		if (indexOfFound > -1) {
-			nodes.splice(i, 1);
-			ids.splice(indexOfFound, 1);
+
+function removeNode(nodes, id) {
+	return nodes.map(function(node) {
+		if (node.get('id') !== id) {
+			if (node.has('children')) {
+				return node.set('children', removeNode(node.get('children'), id));
+			}
+			return node;
 		}
-		else if (obj.children) {
-			removeNode(obj.children, ids);
-		}
-	}
+		return undefined;
+	}).filter(Boolean);
 }
+
 function getParent(nodes, id) {
 	for (let i = 0; i < nodes.length; i++) {
 		const node = nodes[i];
@@ -126,57 +131,62 @@ function getParent(nodes, id) {
 	}
 }
 
-function replaceNode(nodes, dragged, hovered, position) {
-	removeNode(nodes, [ dragged.id ]);
+function moveNode(tree, action) {
+	const nodes = removeNode(fromJS(tree), action.getIn([ 'dragged', 'id' ]));
+	let hovered = action.get('hovered');
+	const dragged = action.get('dragged');
+	const position = action.get('position');
 	if (position === 'into') {
-		if (!hovered.children) {
-			hovered.children = [];
+		if (!hovered.has('children')) {
+			hovered = hovered.set('children', []);
 		}
-		hovered.children.push(dragged);
+		const newChildren = List(hovered.get('children')).push(dragged);
+		hovered = hovered.set('children', newChildren);
+		return replaceNode(nodes, hovered);
 	}
 	else {
-		const t = getParent(nodes, hovered.id);
-		if (t) {
-			const tNode = t.node;
-			const tIndex = t.index;
-			if (position === 'before') {
-				tNode.children.splice(tIndex, 0, dragged);
-			}
-			else {
-				tNode.children.splice(tIndex + 1, 0, dragged);
-			}
+		const parent = getParent(nodes.toJS(), hovered.get('id'));
+		if (parent) {
+			let parentNode = fromJS(parent.node);
+			const tIndex =
+				(position === 'before') ? parent.index : parent.index + 1;
+			parentNode = parentNode.set('children',
+				parentNode.get('children').insert(tIndex, dragged));
+			return replaceNode(nodes, parentNode);
 		}
 		else {
-			const tIndex = nodes.findIndex(obj => obj.id === hovered.id);
-			if (position === 'before') {
-				nodes.splice(tIndex, 0, dragged);
-			}
-			else {
-				nodes.splice(tIndex + 1, 0, dragged);
-			}
+			let index =
+				nodes.findIndex((obj) => obj.get('id') === hovered.get('id'));
+			index = (position === 'before') ? index : index + 1;
+			return nodes.insert(index, dragged);
 		}
 	}
 }
-function canDrop(dragged, hovered, position) {
-	if (hovered.type === 'search' && position === 'into') { return false; }
-
+function canDrop(action) {
+	if (action.getIn([ 'hovered', 'type' ]) === 'search' &&
+		action.get('position') === 'into') {
+		return false;
+	}
 	return true;
 }
 function dropNode(tree, action) {
-	if (!canDrop(action.dragged, action.hovered, action.position)) {
+	if (!canDrop(action)) {
 		return tree;
 	}
-	const treeCopy = removeAllEffects(Object.assign([], tree));
-	const hoveredNode = getNodeById(treeCopy, action.hovered.id);
-	const draggedNode = getNodeById(treeCopy, action.dragged.id);
+	const treeCopy = removeAllEffects(fromJS(tree)).toJS();
+	const newAction = action.set('hovered',
+		removeAllEffects(fromJS([ action.get('hovered') ])).first());
 
-	replaceNode(treeCopy, draggedNode, hoveredNode, action.position);
-	return treeCopy;
+	return moveNode(treeCopy, newAction);
 }
 function removeHover(nodes) {
 	return nodes.map(function(node) {
-		const children = node.children ? removeHover(node.children) : undefined;
-		return Object.assign({}, node, { hover: undefined, children });
+		const newNode = node.remove('hover');
+		if (newNode.has('children')) {
+			const children = removeHover(newNode.get('children'));
+			return newNode.set('children', children);
+		}
+		return newNode;
 	});
 }
 
@@ -186,26 +196,41 @@ function removeAllEffects(tree) {
 
 function getNodeById(nodes, id) {
 	return nodes.map(function(node) {
-		if (node.id === id) {
+		if (node.get('id') === id) {
 			return node;
 		}
-		else {
-			if (node.children) {
-				return getNodeById(node.children, id);
-			}
+		else if (node.has('children')) {
+			return getNodeById(node.get('children'), id);
 		}
 		return undefined;
-	}).filter((node) => node)[0];
+	}).filter(Boolean).first();
 }
+
+function replaceNode(nodes, newNode) {
+	return nodes.map(function(node) {
+		if (node.get('id') === newNode.get('id')) {
+			return newNode;
+		}
+		else if (node.has('children')) {
+			return node.set('children', replaceNode(node.get('children'), newNode));
+		}
+		return node;
+	});
+}
+
 function setHoverEffects(tree, action) {
-	const treeCopy = removeHover(tree);
-	if (!canDrop(action.dragged, action.hovered, action.position)) {
+	const treeCopy = removeAllEffects(tree);
+	if (!canDrop(action)) {
 		return treeCopy;
 	}
-	const newHoveredNode = getNodeById(treeCopy, action.hovered.id);
-	newHoveredNode.collapsed = false;
-	newHoveredNode.hover = action.position;
-	return treeCopy;
+	let newNode = action.get('hovered');
+	newNode = newNode.
+		set('collapsed', false).
+		set('hover', action.get('position'));
+	if (newNode.has('children')) {
+		newNode = newNode.set('children', removeAllEffects(newNode.get('children')));
+	}
+	return replaceNode(treeCopy, newNode);
 }
 
 
