@@ -9,6 +9,7 @@
 .node.hover.before {
 	border-top: 0.1rem solid
 }
+
 .node.drag {
 	opacity: 0.4
 }

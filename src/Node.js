@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { DragSource, DropTarget } from 'react-dnd';
 import ItemTypes from './ItemTypes';
+import { Positions } from './Tree';
 
 
 const style = {
@@ -13,7 +14,6 @@ const style = {
 
 const getHoverPos = (component, monitor) => {
 	const hoverBoundingRect = ReactDOM.findDOMNode(component).getBoundingClientRect();
-	// Get vertical middle
 	const nodeChildren = document.getElementById(
 		`children_node_${component.props.node.id}`);
 	const nodeChildrenHeight = (nodeChildren) ? nodeChildren.offsetHeight : 0;
@@ -34,16 +34,16 @@ const getHoverPos = (component, monitor) => {
 
 	// Dragging downwards
 	if (hoverClientY <= (hoverMiddleY - hoverTolerance)) {
-		hoverPosition = 'before';
+		hoverPosition = Positions.BEFORE;
 	}
 	// Dragging upwards
 	else if (hoverClientY > (hoverMiddleY + hoverTolerance)) {
-		hoverPosition = 'after';
+		hoverPosition = Positions.AFTER;
 
 	}
 
 	else {
-		hoverPosition = 'into';
+		hoverPosition = Positions.INTO;
 
 	}
 
@@ -96,11 +96,9 @@ const nodeTarget = {
 class Node extends Component {
 
 	render() {
-		const collapsed = this.props.collapsed ? this.props.collapsed : false;
-		const { connectDragSource, connectDropTarget, children,
+		const { connectDragSource, connectDropTarget, isDragging, children,
 				nodeRenderer, node } = this.props;
 
-		const visibility = (collapsed) ? 'none' : 'block';
 		const nodeJSX = nodeRenderer(node);
 
 		if (node.rootNode) {
@@ -118,7 +116,8 @@ class Node extends Component {
 				<div>
 					<li
 						className={'node' +
-						(node.hover ? ` ${node.hover} hover` : '')}
+						(node.hover ? ` ${node.hover} hover` : '') +
+						(isDragging ? ' drag' : '')}
 						id={`node_${node.id}`}
 						key={node.id}
 						style={{
@@ -133,7 +132,7 @@ class Node extends Component {
 							className={'children'+
 							(node.collapsed ? ' collapsed' : '')}
 							id={`children_node_${node.id}`}
-							style={{ listStyleType: 'none', display: visibility }}
+							style={{ listStyleType: 'none' }}
 						>
 							{children}
 						</ul>
@@ -157,9 +156,6 @@ Node.propTypes = {
 	cancelDrop: PropTypes.func.isRequired,
 	isDescendant: PropTypes.func.isRequired,
 	isHovering: PropTypes.bool.isRequired,
-	isHoveringAfter: PropTypes.bool,
-	isHoveringBefore: PropTypes.bool,
-	collapsed: PropTypes.bool,
 	nodeRenderer: PropTypes.func.isRequired,
 };
 

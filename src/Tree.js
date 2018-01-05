@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
+import Actions from './Actions';
 import Node from './Node';
 
 class Tree extends Component {
@@ -50,13 +51,13 @@ class Tree extends Component {
 
 	cancelDrop() {
 		const action = {
-			type: 'CANCEL_DROP',
+			type: Actions.CANCEL_DROP,
 		}
 		this.props.dispatch(action);
 	}
 	drop(dragged, hovered, position) {
 		const action = {
-			type: 'DROP',
+			type: Actions.DROP,
 			dragged: dragged.node,
 			hovered: hovered.node,
 			position: position,
@@ -65,7 +66,7 @@ class Tree extends Component {
 	}
 	hover(dragged, hovered, position) {
 		const action = {
-			type: 'HOVER',
+			type: Actions.HOVER,
 			dragged: dragged.node,
 			hovered: hovered.node,
 			position: position,
@@ -104,4 +105,10 @@ class Tree extends Component {
 Tree.defaultProps = {
 	dispatch() {},
 };
+const Positions = {
+	INTO: 'into',
+	BEFORE: 'before',
+	AFTER: 'after',
+};
+export { Positions };
 export default DragDropContext(HTML5Backend)(Tree);
