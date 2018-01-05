@@ -125,7 +125,9 @@ function moveNode(tree, action) {
 		if (!hovered.has('children')) {
 			hovered = hovered.set('children', []);
 		}
-		const newChildren = List(hovered.get('children')).push(dragged);
+		const hoveredChildren = removeNode(hovered.get('children'),
+			action.getIn([ 'dragged', 'id' ]));
+		const newChildren = List(hoveredChildren).push(dragged);
 		hovered = hovered.set('children', newChildren);
 		return replaceNode(nodes, hovered);
 	}
@@ -216,11 +218,11 @@ class ReduxWrapper extends Component {
 			this.setState(this.createStateFromStore(props.store));
 		});
 	}
-	createStateFromStore(s) {
-		return { tree: s.getState().get('tree').toJS() };
-	}
 	componentWillUnmount() {
 		this.unsubscribe();
+	}
+	createStateFromStore(s) {
+		return { tree: s.getState().get('tree').toJS() };
 	}
 	render() {
 		const childrenWithProps = React.cloneElement(this.props.children, {
