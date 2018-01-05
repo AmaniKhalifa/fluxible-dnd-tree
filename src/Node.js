@@ -31,23 +31,19 @@ const getHoverPos = (component, monitor) => {
 	const hoverClientY = clientOffset.y - hoverBoundingRect.top;
 
 	let hoverPosition = null;
-	// let hover = { isHoveringBefore: false, isHoveringAfter: false };
 
 	// Dragging downwards
 	if (hoverClientY <= (hoverMiddleY - hoverTolerance)) {
 		hoverPosition = 'before';
-		// hover = { isHoveringBefore: true, isHoveringAfter: false };
 	}
 	// Dragging upwards
 	else if (hoverClientY > (hoverMiddleY + hoverTolerance)) {
 		hoverPosition = 'after';
-		// hover = { isHoveringBefore: false, isHoveringAfter: true };
 
 	}
 
 	else {
 		hoverPosition = 'into';
-		// hover = { isHoveringBefore: false, isHoveringAfter: false };
 
 	}
 
@@ -60,7 +56,6 @@ const nodeSource = {
 	},
 	endDrag(props, monitor) {
 		const droppedObj = monitor.getDropResult();
-		// preventing a node to be dropped inside itself
 		const hasTarget = droppedObj && droppedObj.props && droppedObj.props.node;
 		const droppedIntoItself = hasTarget && droppedObj.props.node.id === props.node.id;
 		const targetUnderSource = hasTarget &&
@@ -89,7 +84,6 @@ const nodeTarget = {
 		}
 	},
 	drop(props, monitor, component) {
-        // monitor.didDrop() checkes if the event was handled by a nested (child) node.
 		const didDrop = monitor.didDrop();
 		if (!didDrop) {
 			const dropPos = getHoverPos(component, monitor);
@@ -100,39 +94,24 @@ const nodeTarget = {
 };
 
 class Node extends Component {
-	// constructor(props) {
-	// 	super(props);
-	// 	this.state = {
-	// 		node: this.props.node,
-	// 	};
-	// }
-	// updateNode(node) {
-	// 	this.setState({ node: node });
-	// }
+
 	render() {
-		// const node = this.state.node;
 		const collapsed = this.props.collapsed ? this.props.collapsed : false;
 		const { connectDragSource, connectDropTarget, children,
 				nodeRenderer, node } = this.props;
-	//	console.warn("Node is rendering ", node);
-
-
-		// const hoveringOnNode = isHovering && !isDragging;
-		// const hoveringBeforeNode = isHoveringBefore && isHovering && !isDragging;
-		// const hoveringAfterNode = isHoveringAfter && isHovering && !isDragging;
 
 		const visibility = (collapsed) ? 'none' : 'block';
 		const nodeJSX = nodeRenderer(node);
 
 		if (node.rootNode) {
-			return(<div style={{ width: '100%'}}>
-					<ul
-						id={`node_${node.id}`}
-						style={{ listStyleType: 'none', ...style }}
-					>
-						{children}
-					</ul>
-				</div>);
+			return (<div style={{ width: '100%'}}>
+				<ul
+					id={`node_${node.id}`}
+					style={{ listStyleType: 'none', ...style }}
+				>
+					{children}
+				</ul>
+			</div>);
 		}
 		else {
 			return connectDragSource(connectDropTarget(
