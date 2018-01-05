@@ -118,16 +118,22 @@ function getParent(nodes, id) {
 
 function moveNode(tree, action) {
 	const nodes = removeNode(tree, action.getIn([ 'dragged', 'id' ]));
-	let hovered = action.get('hovered');
+	let hovered = {};
+	if (action.hasIn([ 'hovered', 'children' ])) {
+		const hoveredChildren = removeNode(action.getIn([ 'hovered', 'children' ]),
+		action.getIn([ 'dragged', 'id' ]));
+		hovered = action.get('hovered').set('children', hoveredChildren);
+	}
+	else {
+		hovered = action.get('hovered');
+	}
 	const dragged = action.get('dragged');
 	const position = action.get('position');
 	if (position === 'into') {
 		if (!hovered.has('children')) {
 			hovered = hovered.set('children', []);
 		}
-		const hoveredChildren = removeNode(hovered.get('children'),
-			action.getIn([ 'dragged', 'id' ]));
-		const newChildren = List(hoveredChildren).push(dragged);
+		const newChildren = List(hovered.get('children')).push(dragged);
 		hovered = hovered.set('children', newChildren);
 		return replaceNode(nodes, hovered);
 	}
