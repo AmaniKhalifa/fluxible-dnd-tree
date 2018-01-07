@@ -80,39 +80,39 @@ function getParent(nodes, id) {
 
 function moveNode(tree, action) {
 	const nodes = removeNode(tree, action.getIn([ 'dragged', 'id' ]));
-	let hovered = {};
-	if (action.hasIn([ 'hovered', 'children' ])) {
-		const hoveredChildren = removeNode(action.getIn([ 'hovered', 'children' ]),
+	let target = {};
+	if (action.hasIn([ 'target', 'children' ])) {
+		const hoveredChildren = removeNode(action.getIn([ 'target', 'children' ]),
 		action.getIn([ 'dragged', 'id' ]));
-		hovered = action.get('hovered').set('children', hoveredChildren);
+		target = action.get('target').set('children', hoveredChildren);
 	}
 	else {
-		hovered = action.get('hovered');
+		target = action.get('target');
 	}
 	const dragged = action.get('dragged');
 	const position = action.get('position');
-	if (position === Positions.INTO) {
-		if (!hovered.has('children')) {
-			hovered = hovered.set('children', []);
+	if (position === Positions.get('INTO')) {
+		if (!target.has('children')) {
+			target = target.set('children', []);
 		}
-		const newChildren = List(hovered.get('children')).push(dragged);
-		hovered = hovered.set('children', newChildren);
-		return replaceNode(nodes, hovered);
+		const newChildren = List(target.get('children')).push(dragged);
+		target = target.set('children', newChildren);
+		return replaceNode(nodes, target);
 	}
 	else {
-		let parent = getParent(nodes, hovered.get('id'));
+		let parent = getParent(nodes, target.get('id'));
 		if (parent) {
 			let index = parent.get('children').
-				findIndex((child) => child.get('id') === hovered.get('id'));
-			index = (position === Positions.BEFORE) ? index : index + 1;
+				findIndex((child) => child.get('id') === target.get('id'));
+			index = (position === Positions.get('BEFORE')) ? index : index + 1;
 			parent = parent.set('children',
 				parent.get('children').insert(index, dragged));
 			return replaceNode(nodes, parent);
 		}
 		else {
 			let index =
-				nodes.findIndex((obj) => obj.get('id') === hovered.get('id'));
-			index = (position === Positions.BEFORE) ? index : index + 1;
+				nodes.findIndex((obj) => obj.get('id') === target.get('id'));
+			index = (position === Positions.get('BEFORE')) ? index : index + 1;
 			return nodes.insert(index, dragged);
 		}
 	}
@@ -123,8 +123,8 @@ export function dropNode(tree, action, canDrop) {
 		return tree;
 	}
 	const treeCopy = removeAllEffects(tree);
-	const newAction = action.set('hovered',
-		removeAllEffects(List([ action.get('hovered') ])).first());
+	const newAction = action.set('target',
+		removeAllEffects(List([ action.get('target') ])).first());
 
 	return moveNode(treeCopy, newAction);
 }

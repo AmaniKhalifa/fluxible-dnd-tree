@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
+import { fromJS, Map, List } from 'immutable';
 import Actions from './Actions';
 import Node from './Node';
 
@@ -31,35 +32,17 @@ class Tree extends Component {
 		});
 	}
 
-	isDescendant(node, id) {
-		if (node.children) {
-			const children = node.children;
-			for (let i = 0; i < children.length; i++) {
-				if (children[i].id === id) {
-					return true;
-				}
-			}
-			for (let i = 0; i < children.length; i++) {
-				const res = this.isDescendant(children[i], id);
-				if (res) {
-					return res;
-				}
-			}
-		}
-		return false;
-	}
-
 	cancelDrop() {
 		const action = {
 			type: Actions.CANCEL_DROP,
-		}
+		};
 		this.props.dispatch(action);
 	}
-	drop(dragged, hovered, position) {
+	drop(dragged, target, position) {
 		const action = {
 			type: Actions.DROP,
-			dragged: dragged.node,
-			hovered: hovered.node,
+			dragged: dragged.get('node'),
+			target: target.get('node'),
 			position: position,
 		};
 		this.props.dispatch(action);
@@ -67,8 +50,8 @@ class Tree extends Component {
 	hover(dragged, hovered, position) {
 		const action = {
 			type: Actions.HOVER,
-			dragged: dragged.node,
-			hovered: hovered.node,
+			dragged: dragged.get('node'),
+			hovered: hovered.get('node'),
 			position: position,
 		};
 		this.props.dispatch(action);
@@ -77,9 +60,13 @@ class Tree extends Component {
 
 	render() {
 		const buildNode = (node) => {
-			const children = [];
-			for (let i = 0; node.children && i < node.children.length; i++) {
-				children.push(buildNode(node.children[i]));
+			let children = List([]);
+			if (node.get('children')) {
+				children = node.get('children').map(
+					(child) => {
+						return buildNode(child);
+					}
+				);
 			}
 			return (<Node
 				isDescendant={this.isDescendant}
@@ -88,14 +75,11 @@ class Tree extends Component {
 				hover={this.hover.bind(this)}
 				node={node}
 				nodeRenderer={this.props.renderNode}
-			> {node.children && children }
+			> {node.get('children') && children }
 			</Node>);
 		};
 
-		const nodes = [];
-		for (let i = 0; i < this.state.tree.length; i++) {
-			nodes.push(buildNode(this.state.tree[i]));
-		}
+		const nodes = buildNode(fromJS(this.state.tree[0]));
 		return (
 			<span>
 				<div style={{ width: '100%' }}> {nodes} </div>
@@ -104,11 +88,13 @@ class Tree extends Component {
 }
 Tree.defaultProps = {
 	dispatch() {},
+	renderNode() {},
+	tree: {},
 };
-const Positions = {
+const Positions = Map({
 	INTO: 'into',
 	BEFORE: 'before',
 	AFTER: 'after',
-};
+});
 export { Positions };
 export default DragDropContext(HTML5Backend)(Tree);

@@ -6,7 +6,7 @@ import { ExampleNode, ExampleNodeSelection } from '../examples/Example';
 import { collapseNode, selectNode, removeAllEffects,
 	setHoverEffects, dropNode } from '../src/Reducers';
 import Actions from '../src/Actions';
-import Tree, { Positions }  from '../src/Tree';
+import Tree, { Positions } from '../src/Tree';
 import './css/styles.css';
 import './css/font-awesome.min.css';
 
@@ -55,7 +55,7 @@ const initState = fromJS({
 					id: 7,
 					type: 'folder' },
 			] },
-	]
+	],
 });
 
 const store = createStore(reducer, initState);
@@ -83,7 +83,7 @@ function reducer(state, actionObj) {
 
 function canDrop(action) {
 	if (action.getIn([ 'hovered', 'type' ]) === 'search' &&
-		action.get('position') === Positions.INTO) {
+		action.get('position') === Positions.get('INTO')) {
 		return false;
 	}
 	return true;
@@ -95,7 +95,6 @@ class ReduxWrapper extends Component {
 		super(props);
 		this.state = this.createStateFromStore(props.store);
 		this.unsubscribe = props.subscribe(() => {
-			const state = props.store.getState();
 			this.setState(this.createStateFromStore(props.store));
 		});
 	}
@@ -122,7 +121,7 @@ storiesOf('Drag and Drop', module).
 			type: Actions.HOVER,
 			dragged: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
 			hovered: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
-			position: Positions.BEFORE,
+			position: Positions.get('BEFORE'),
 		};
 		store.dispatch(action);
 		return (
@@ -142,7 +141,7 @@ storiesOf('Drag and Drop', module).
 				type: Actions.HOVER,
 				dragged: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
 				hovered: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
-				position: Positions.AFTER,
+				position: Positions.get('AFTER'),
 			};
 			store.dispatch(action);
 			return (
@@ -162,7 +161,7 @@ storiesOf('Drag and Drop', module).
 					type: Actions.HOVER,
 					dragged: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
 					hovered: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
-					position: Positions.INTO,
+					position: Positions.get('INTO'),
 				};
 				store.dispatch(action);
 				return (
@@ -172,7 +171,7 @@ storiesOf('Drag and Drop', module).
 						(nodeData) => <ExampleNode
 							data={nodeData}
 						/>
-					}
+						}
 					/>
 
 				);
@@ -183,7 +182,8 @@ storiesOf('Interactive Tree', module).
 			return (
 				<ReduxWrapper
 					store={DNDstore}
-					subscribe={DNDstore.subscribe}>
+					subscribe={DNDstore.subscribe}
+				>
 					<Tree
 						dispatch={DNDstore.dispatch}
 						renderNode={
