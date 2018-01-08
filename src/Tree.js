@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { DragDropContext } from 'react-dnd';
+import PropTypes from 'prop-types';
 import HTML5Backend from 'react-dnd-html5-backend';
-import { fromJS, Map, List } from 'immutable';
+import { Map, List } from 'immutable';
 import Actions from './Actions';
 import Node from './Node';
 
@@ -10,25 +11,25 @@ class Tree extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			tree: [
-				{ title: 'DummyNode',
+			tree: List([
+				Map({ title: 'DummyNode',
 					id: '__1',
 					rootNode: true,
 					children: this.props.tree,
-				},
-			],
+				}),
+			]),
 		};
 	}
 	componentWillReceiveProps(newProps) {
-		const tree = [
-				{ title: 'DummyNode',
-					id: '__1',
-					rootNode: true,
-					children: newProps.tree
-				},
-			];
+		const tree = List([
+			Map({ title: 'DummyNode',
+				id: '__1',
+				rootNode: true,
+				children: newProps.tree,
+			}),
+		]);
 		this.setState({
-			tree: tree
+			tree,
 		});
 	}
 
@@ -43,7 +44,7 @@ class Tree extends Component {
 			type: Actions.DROP,
 			dragged: dragged.get('node'),
 			target: target.get('node'),
-			position: position,
+			position,
 		};
 		this.props.dispatch(action);
 	}
@@ -51,8 +52,8 @@ class Tree extends Component {
 		const action = {
 			type: Actions.HOVER,
 			dragged: dragged.get('node'),
-			hovered: hovered.get('node'),
-			position: position,
+			target: hovered.get('node'),
+			position,
 		};
 		this.props.dispatch(action);
 
@@ -60,26 +61,25 @@ class Tree extends Component {
 
 	render() {
 		const buildNode = (node) => {
-			let children = List([]);
+			let children = List();
 			if (node.get('children')) {
 				children = node.get('children').map(
-					(child) => {
-						return buildNode(child);
-					}
+					(child) => buildNode(child)
 				);
 			}
 			return (<Node
+				key={node.get('id')}
 				isDescendant={this.isDescendant}
-				cancelDrop={this.cancelDrop.bind(this)}
-				drop={this.drop.bind(this)}
-				hover={this.hover.bind(this)}
+				cancelDrop={(...args) => this.cancelDrop(...args)}
+				drop={(...args) => this.drop(...args)}
+				hover={(...args) => this.hover(...args)}
 				node={node}
 				nodeRenderer={this.props.renderNode}
 			> {node.get('children') && children }
 			</Node>);
 		};
 
-		const nodes = buildNode(fromJS(this.state.tree[0]));
+		const nodes = buildNode(this.state.tree.get(0));
 		return (
 			<span>
 				<div style={{ width: '100%' }}> {nodes} </div>
@@ -89,7 +89,12 @@ class Tree extends Component {
 Tree.defaultProps = {
 	dispatch() {},
 	renderNode() {},
-	tree: {},
+	tree: [],
+};
+Tree.propTypes = {
+	dispatch: PropTypes.func.isRequired,
+	tree: PropTypes.any.isRequired,
+	renderNode: PropTypes.func.isRequired,
 };
 const Positions = Map({
 	INTO: 'into',

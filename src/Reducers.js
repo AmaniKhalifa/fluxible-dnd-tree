@@ -41,7 +41,7 @@ export function setHoverEffects(tree, action, canDrop) {
 	if (!canDrop(action)) {
 		return treeCopy;
 	}
-	let newNode = action.get('hovered');
+	let newNode = action.get('target');
 	newNode = newNode.
 		set('collapsed', false).
 		set('hover', action.get('position'));
@@ -70,9 +70,9 @@ function getParent(nodes, id) {
 			if (parent) {
 				return node;
 			}
-			else {
-				return getParent(node.get('children'), id);
-			}
+
+			return getParent(node.get('children'), id);
+
 		}
 		return undefined;
 	}).filter(Boolean).first();
@@ -80,7 +80,7 @@ function getParent(nodes, id) {
 
 function moveNode(tree, action) {
 	const nodes = removeNode(tree, action.getIn([ 'dragged', 'id' ]));
-	let target = {};
+	let target;
 	if (action.hasIn([ 'target', 'children' ])) {
 		const hoveredChildren = removeNode(action.getIn([ 'target', 'children' ]),
 		action.getIn([ 'dragged', 'id' ]));
@@ -99,23 +99,23 @@ function moveNode(tree, action) {
 		target = target.set('children', newChildren);
 		return replaceNode(nodes, target);
 	}
-	else {
-		let parent = getParent(nodes, target.get('id'));
-		if (parent) {
-			let index = parent.get('children').
+
+	let parent = getParent(nodes, target.get('id'));
+	if (parent) {
+		let index = parent.get('children').
 				findIndex((child) => child.get('id') === target.get('id'));
-			index = (position === Positions.get('BEFORE')) ? index : index + 1;
-			parent = parent.set('children',
+		index = (position === Positions.get('BEFORE')) ? index : index + 1;
+		parent = parent.set('children',
 				parent.get('children').insert(index, dragged));
-			return replaceNode(nodes, parent);
-		}
-		else {
-			let index =
-				nodes.findIndex((obj) => obj.get('id') === target.get('id'));
-			index = (position === Positions.get('BEFORE')) ? index : index + 1;
-			return nodes.insert(index, dragged);
-		}
+		return replaceNode(nodes, parent);
 	}
+
+	let index =
+				nodes.findIndex((obj) => obj.get('id') === target.get('id'));
+	index = (position === Positions.get('BEFORE')) ? index : index + 1;
+	return nodes.insert(index, dragged);
+
+
 }
 
 export function dropNode(tree, action, canDrop) {

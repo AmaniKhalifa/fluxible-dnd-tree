@@ -77,14 +77,14 @@ const nodeSource = {
 		const targetIsDragged = hasTarget &&
 			target.getIn([ 'target', 'node', 'id' ]) === dragged.getIn([ 'node', 'id' ]);
 		const targetUnderSource = hasTarget &&
-							isDescendant(fromJS(dragged.get('node')),
+							isDescendant(dragged.get('node'),
 							target.getIn([ 'target', 'node', 'id' ]));
 		if (hasTarget && !targetIsDragged && !targetUnderSource) {
-			dragged.toJS().drop(dragged, target.get('target'),
+			dragged.get('drop')(dragged, target.get('target'),
 				target.get('position'));
 		}
 		else {
-			dragged.toJS().cancelDrop();
+			dragged.get('cancelDrop')();
 		}
 	},
 };
@@ -99,14 +99,14 @@ const nodeTarget = {
 					hovered.get('id')}-${hoverPosition}`;
 			if (component.lastHover === currentHover) { return; }
 			component.lastHover = currentHover;
-			hovered.toJS().hover(dragged, hovered, hoverPosition);
+			hovered.get('hover')(dragged, hovered, hoverPosition);
 		}
 	},
 	drop(target, monitor, component) {
 		const didDrop = monitor.didDrop();
 		if (!didDrop) {
 			const position = getHoverPos(component, monitor);
-			return { target: target, position: position };
+			return { target, position };
 		}
 		return undefined;
 	},
@@ -118,10 +118,10 @@ class Node extends Component {
 		const { connectDragSource, connectDropTarget, isDragging, children,
 				nodeRenderer, node } = this.props;
 
-		const nodeJSX = nodeRenderer(node.toJS());
+		const nodeJSX = nodeRenderer(node);
 
 		if (node.get('rootNode')) {
-			return (<div style={{ width: '100%'}}>
+			return (<div style={{ width: '100%' }}>
 				<ul
 					id={`node_${node.get('id')}`}
 					style={{ listStyleType: 'none', ...style }}
@@ -130,37 +130,35 @@ class Node extends Component {
 				</ul>
 			</div>);
 		}
-		else {
-			return connectDragSource(connectDropTarget(
-				<div>
-					<li
-						className={'node' +
-						(node.get('hover') ? ` ${node.get('hover')} hover` : '') +
-						(isDragging ? ' drag' : '')}
-						id={`node_${node.get('id')}`}
-						key={node.get('id')}
-						style={{
-							...style,
-							cursor: 'move',
-							display: 'block',
-							width: '100%',
-						}}
+
+		return connectDragSource(connectDropTarget(
+			<div>
+				<li
+					className={`node${
+						node.get('hover') ? ` ${node.get('hover')} hover` : ''
+						}${isDragging ? ' drag' : ''}`}
+					id={`node_${node.get('id')}`}
+					style={{
+						...style,
+						cursor: 'move',
+						display: 'block',
+						width: '100%',
+					}}
+				>
+					{nodeJSX}
+					<ul
+						className={`children${
+							node.get('collapsed') ? ' collapsed' : ''}`}
+						id={`children_node_${node.get('id')}`}
+						style={{ listStyleType: 'none' }}
 					>
-						{nodeJSX}
-						<ul
-							className={'children' +
-							(node.get('collapsed') ? ' collapsed' : '')}
-							id={`children_node_${node.get('id')}`}
-							style={{ listStyleType: 'none' }}
-						>
-							{children}
-						</ul>
-					</li>
-				</div>
+						{children}
+					</ul>
+				</li>
+			</div>
 					,
 				));
 
-		}
 
 	}
 }

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import FontAwesome from 'react-fontawesome';
+import PropTypes from 'prop-types';
 import Tree from '../src/Tree';
 
 export default class Example extends Component {
@@ -51,8 +52,9 @@ export default class Example extends Component {
 }
 
 
-export function ExampleNode({ data, click }) {
-	const icon = (!data.collapsed && data.type !== 'search') ? 'folder-open' : data.type;
+export function ExampleNodeCollapse({ data, click }) {
+	const icon = (!data.get('collapsed') && data.get('type') !== 'search') ?
+		'folder-open' : data.get('type');
 	return (
 		<span onClick={click} style={{ padding: '0.0rem 0.5rem', border: '0.1rem' }} >
 			<FontAwesome
@@ -60,38 +62,52 @@ export function ExampleNode({ data, click }) {
 				style={{ padding: '0.0rem 0.5rem',
 					textShadow: '0 1px 0 rgba(0, 0, 0, 0.1)' }}
 			/>
-			<small>{data.title}</small>
+			<small>{data.get('title')}</small>
 		</span>
 	);
 }
 
-export function ExampleNodeCollapse({ data}) {
+ExampleNodeCollapse.propTypes = {
+	data: PropTypes.any.isRequired,
+	click: PropTypes.func.isRequired,
+};
+
+export function ExampleNode({ data }) {
 	return (
 		<span style={{ padding: '0.0rem 0.5rem', border: '0.1rem' }} >
 			<FontAwesome
-				name={data.type}
+				name={data.get('type')}
 				style={{ padding: '0.0rem 0.5rem',
 					textShadow: '0 1px 0 rgba(0, 0, 0, 0.1)' }}
 			/>
-			<small>{data.title}</small>
+			<small>{data.get('title')}</small>
 		</span>
 	);
 }
-export function ExampleNodeSelection({ data, select}) {
+
+ExampleNode.propTypes = {
+	data: PropTypes.any.isRequired,
+};
+export function ExampleNodeSelection({ data, select }) {
 	return (
 		<span style={{ padding: '0.0rem 0.5rem', border: '0.1rem' }} >
 			<input
-				id={`checkbox_node_${data.id}`}
+				id={`checkbox_node_${data.get('id')}`}
 				type="checkbox"
-				checked={data.selected}
+				checked={data.get('selected')}
 				onChange={select}
 			/>
 			<FontAwesome
-				name={data.type}
+				name={data.get('type')}
 				style={{ padding: '0.0rem 0.5rem',
 					textShadow: '0 1px 0 rgba(0, 0, 0, 0.1)' }}
 			/>
-			<small>{data.title}</small>
+			<small>{data.get('title')}</small>
 		</span>
 	);
 }
+
+ExampleNodeSelection.propTypes = {
+	data: PropTypes.any.isRequired,
+	select: PropTypes.func.isRequired,
+};

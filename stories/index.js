@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import { storiesOf } from '@kadira/storybook';
 import { createStore } from 'redux';
 import { fromJS } from 'immutable';
-import { ExampleNode, ExampleNodeSelection } from '../examples/Example';
+import PropTypes from 'prop-types';
+import { ExampleNode, ExampleNodeSelection,
+	ExampleNodeCollapse } from '../examples/Example';
 import { collapseNode, selectNode, removeAllEffects,
 	setHoverEffects, dropNode } from '../src/Reducers';
 import Actions from '../src/Actions';
@@ -82,7 +84,7 @@ function reducer(state, actionObj) {
 }
 
 function canDrop(action) {
-	if (action.getIn([ 'hovered', 'type' ]) === 'search' &&
+	if (action.getIn([ 'target', 'type' ]) === 'search' &&
 		action.get('position') === Positions.get('INTO')) {
 		return false;
 	}
@@ -102,7 +104,7 @@ class ReduxWrapper extends Component {
 		this.unsubscribe();
 	}
 	createStateFromStore(s) {
-		return { tree: s.getState().get('tree').toJS() };
+		return { tree: s.getState().get('tree') };
 	}
 	render() {
 		const childrenWithProps = React.cloneElement(this.props.children, {
@@ -113,6 +115,11 @@ class ReduxWrapper extends Component {
 		</div>);
 	}
 }
+ReduxWrapper.propTypes = {
+	store: PropTypes.any.isRequired,
+	subscribe: PropTypes.func.isRequired,
+	children: PropTypes.any.isRequired,
+};
 
 
 storiesOf('Drag and Drop', module).
@@ -120,13 +127,13 @@ storiesOf('Drag and Drop', module).
 		const action = {
 			type: Actions.HOVER,
 			dragged: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
-			hovered: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
+			target: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
 			position: Positions.get('BEFORE'),
 		};
 		store.dispatch(action);
 		return (
 			<Tree
-				tree={store.getState().get('tree').toJS()}
+				tree={store.getState().get('tree')}
 				renderNode={
 				(nodeData) => <ExampleNode
 					data={nodeData}
@@ -140,13 +147,13 @@ storiesOf('Drag and Drop', module).
 			const action = {
 				type: Actions.HOVER,
 				dragged: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
-				hovered: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
+				target: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
 				position: Positions.get('AFTER'),
 			};
 			store.dispatch(action);
 			return (
 				<Tree
-					tree={store.getState().get('tree').toJS()}
+					tree={store.getState().get('tree')}
 					renderNode={
 					(nodeData) => <ExampleNode
 						data={nodeData}
@@ -160,13 +167,13 @@ storiesOf('Drag and Drop', module).
 				const action = {
 					type: Actions.HOVER,
 					dragged: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
-					hovered: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
+					target: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
 					position: Positions.get('INTO'),
 				};
 				store.dispatch(action);
 				return (
 					<Tree
-						tree={store.getState().get('tree').toJS()}
+						tree={store.getState().get('tree')}
 						renderNode={
 						(nodeData) => <ExampleNode
 							data={nodeData}
@@ -178,66 +185,62 @@ storiesOf('Drag and Drop', module).
 			});
 
 storiesOf('Interactive Tree', module).
-		add('DND Tree', () => {
-			return (
-				<ReduxWrapper
-					store={DNDstore}
-					subscribe={DNDstore.subscribe}
-				>
-					<Tree
-						dispatch={DNDstore.dispatch}
-						renderNode={
+		add('DND Tree', () => (
+			<ReduxWrapper
+				store={DNDstore}
+				subscribe={DNDstore.subscribe}
+			>
+				<Tree
+					dispatch={DNDstore.dispatch}
+					renderNode={
 						(nodeData) => <ExampleNode
 							data={nodeData}
 						/>
 									}
-					/>
-				</ReduxWrapper>
-			);
-		}).
-		add('Select Node', () => {
-			return (
-				<ReduxWrapper
-					store={selectionStore}
-					subscribe={selectionStore.subscribe}>
-					<Tree
-						dispatch={selectionStore.dispatch}
-						renderNode={
+				/>
+			</ReduxWrapper>
+			)).
+		add('Select Node', () => (
+			<ReduxWrapper
+				store={selectionStore}
+				subscribe={selectionStore.subscribe}
+			>
+				<Tree
+					dispatch={selectionStore.dispatch}
+					renderNode={
 						(nodeData) => <ExampleNodeSelection
 							select={() => {
 								const action = {
 									type: Actions.SELECT,
-									selected: nodeData
+									selected: nodeData,
 								};
 								selectionStore.dispatch(action);
 							}}
 							data={nodeData}
 						/>
 									}
-					/>
-				</ReduxWrapper>
-			);
-		}).
-		add('Expand/Collapse Node', () => {
-			return (
-				<ReduxWrapper
-					store={ExpandCollapseStore}
-					subscribe={ExpandCollapseStore.subscribe}>
-					<Tree
-						dispatch={ExpandCollapseStore.dispatch}
-						renderNode={
-						(nodeData) => <ExampleNode
+				/>
+			</ReduxWrapper>
+			)).
+		add('Expand/Collapse Node', () => (
+			<ReduxWrapper
+				store={ExpandCollapseStore}
+				subscribe={ExpandCollapseStore.subscribe}
+			>
+				<Tree
+					dispatch={ExpandCollapseStore.dispatch}
+					renderNode={
+						(nodeData) => <ExampleNodeCollapse
 							click={() => {
 								const action = {
 									type: Actions.COLLAPSE,
-									collapsed: nodeData
+									collapsed: nodeData,
 								};
 								ExpandCollapseStore.dispatch(action);
 							}}
 							data={nodeData}
 						/>
 									}
-					/>
-				</ReduxWrapper>
-			);
-		});
+				/>
+			</ReduxWrapper>
+			));
