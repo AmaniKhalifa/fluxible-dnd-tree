@@ -18890,8 +18890,8 @@ var _Reducers2 = _interopRequireDefault(_Reducers);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = _Tree2.default;
-exports.Actions = _Actions2.default;
-exports.Reducers = _Reducers2.default;
+var Actions = exports.Actions = _Actions2.default;
+var Reducers = exports.Reducers = _Reducers2.default;
 
 /***/ }),
 /* 171 */
