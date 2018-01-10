@@ -1,6 +1,7 @@
 import Tree from './Tree';
-import Actions from './Actions';
-import Reducers from './Reducers';
+import ActionsModule from './Actions';
+import ReducersModule from './Reducers';
 
 export default Tree;
-export { Actions, Reducers };
+export const Actions = ActionsModule;
+export const Reducers = ReducersModule;
