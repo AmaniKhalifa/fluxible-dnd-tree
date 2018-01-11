@@ -5,10 +5,7 @@ import { fromJS } from 'immutable';
 import PropTypes from 'prop-types';
 import { ExampleNode, ExampleNodeSelection,
 	ExampleNodeCollapse } from '../examples/Example';
-import { collapseNode, selectNode, removeAllEffects,
-	setHoverEffects, dropNode } from '../src/Reducers';
-import Actions from '../src/Actions';
-import Tree, { Positions } from '../src/Tree';
+import Tree, { Positions, Reducers, Actions } from '../src/index';
 import './css/styles.css';
 import './css/font-awesome.min.css';
 
@@ -69,15 +66,15 @@ function reducer(state, actionObj) {
 	const action = fromJS(actionObj);
 	switch (action.get('type')) {
 	case Actions.COLLAPSE:
-		return state.set('tree', collapseNode(state.get('tree'), action));
+		return state.set('tree', Reducers.collapseNode(state.get('tree'), action));
 	case Actions.SELECT:
-		return state.set('tree', selectNode(state.get('tree'), action));
+		return state.set('tree', Reducers.selectNode(state.get('tree'), action));
 	case Actions.CANCEL_DROP:
-		return state.set('tree', removeAllEffects(state.get('tree')));
+		return state.set('tree', Reducers.removeAllEffects(state.get('tree')));
 	case Actions.DROP:
-		return state.set('tree', dropNode(state.get('tree'), action, canDrop));
+		return state.set('tree', Reducers.dropNode(state.get('tree'), action, canDrop));
 	case Actions.HOVER:
-		return state.set('tree', setHoverEffects(state.get('tree'), action, canDrop));
+		return state.set('tree', Reducers.setHoverEffects(state.get('tree'), action, canDrop));
 	default:
 		return state;
 	}
