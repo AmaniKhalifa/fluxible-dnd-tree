@@ -139,7 +139,8 @@ class Node extends Component {
 				className={`no-list node${
 					node.get('hover') ? ` ${node.get('hover')} hover` : ''
 					}${isDragging ? ' drag' : ''}
-					${node.get('selected') ? ' selected' : ''}`}
+					${node.get('selected') ? ' selected' : ''}
+					${node.has('className') ? node.get('className') : ''}`}
 				id={`node_${node.get('id')}`}
 			>
 				{nodeJSX}
