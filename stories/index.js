@@ -4,8 +4,8 @@ import { createStore } from 'redux';
 import { fromJS } from 'immutable';
 import PropTypes from 'prop-types';
 import { ExampleNode, ExampleNodeSelection,
-	ExampleNodeCollapse } from '../examples/Example';
-import Tree, { Positions, Reducers, Actions } from '../src/index';
+	ExampleNodeCollapse } from './examples';
+import Tree, { positions, reducers, actions } from '../src/index';
 import './css/styles.css';
 import './css/font-awesome.min.css';
 
@@ -58,74 +58,111 @@ const initState = fromJS({
 });
 
 const store = createStore(reducer, initState);
-const DNDstore = createStore(reducer, initState);
-const selectionStore = createStore(reducer, initState);
-const ExpandCollapseStore = createStore(reducer, initState);
+
 
 function reducer(state, actionObj) {
 	const action = fromJS(actionObj);
 	switch (action.get('type')) {
-	case Actions.COLLAPSE:
-		return state.set('tree', Reducers.collapseNode(state.get('tree'), action));
-	case Actions.SELECT:
-		return state.set('tree', Reducers.selectNode(state.get('tree'), action));
-	case Actions.CANCEL_DROP:
-		return state.set('tree', Reducers.removeAllEffects(state.get('tree')));
-	case Actions.DROP:
-		return state.set('tree', Reducers.dropNode(state.get('tree'), action, canDrop));
-	case Actions.HOVER:
-		return state.set('tree', Reducers.setHoverEffects(state.get('tree'), action, canDrop));
+	case actions.COLLAPSE:
+		return state.set('tree', reducers.collapseNode(state.get('tree'), action));
+	case actions.SELECT:
+		return state.set('tree', reducers.selectNode(state.get('tree'), action));
+	case actions.CANCEL_DROP:
+		return state.set('tree', reducers.removeAllEffects(state.get('tree')));
+	case actions.DROP:
+		return state.set('tree', reducers.dropNode(state.get('tree'), action, canDrop));
+	case actions.HOVER:
+		return state.set('tree',
+			reducers.setHoverEffects(state.get('tree'), action, canDrop));
 	default:
 		return state;
 	}
 }
 
+function cancelDrop() {
+	const action = {
+		type: actions.CANCEL_DROP,
+	};
+	store.dispatch(action);
+}
+
+
+function drop(dragged, target, position) {
+	const action = {
+		type: actions.DROP,
+		dragged: dragged.get('node'),
+		target: target.get('node'),
+		position,
+	};
+	store.dispatch(action);
+}
+
+
+function hover(dragged, hovered, position) {
+	const action = {
+		type: actions.HOVER,
+		dragged: dragged.get('node'),
+		target: hovered.get('node'),
+		position,
+	};
+	store.dispatch(action);
+
+}
+
+
 function canDrop(action) {
 	if (action.getIn([ 'target', 'type' ]) === 'search' &&
-		action.get('position') === Positions.get('INTO')) {
+		action.get('position') === positions.get('INTO')) {
 		return false;
 	}
 	return true;
 }
 
 
-class ReduxWrapper extends Component {
+class Subscriber extends Component {
 	constructor(props) {
 		super(props);
-		this.state = this.createStateFromStore(props.store);
+
 		this.unsubscribe = props.subscribe(() => {
-			this.setState(this.createStateFromStore(props.store));
+			this.setState({ r: Math.random() });
 		});
 	}
 	componentWillUnmount() {
 		this.unsubscribe();
 	}
-	createStateFromStore(s) {
-		return { tree: s.getState().get('tree') };
-	}
+
 	render() {
-		const childrenWithProps = React.cloneElement(this.props.children, {
-			tree: this.state.tree,
-		});
+
 		return (<div>
-			{childrenWithProps}
+			{this.props.doRender()}
 		</div>);
 	}
 }
-ReduxWrapper.propTypes = {
-	store: PropTypes.any.isRequired,
+
+
+Subscriber.propTypes = {
 	subscribe: PropTypes.func.isRequired,
-	children: PropTypes.any.isRequired,
+	doRender: PropTypes.func.isRequired,
 };
+
+
+function rerenderOn(subscribe, doRender) {
+	return () => (
+		<Subscriber
+			subscribe={subscribe}
+			doRender={doRender}
+		/>
+	);
+}
 
 
 storiesOf('Drag and Drop', module).
 	add('Hover before rendering', () => {
 		const action = {
-			type: Actions.HOVER,
+			type: actions.HOVER,
 			dragged: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
 			target: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
-			position: Positions.get('BEFORE'),
+			position: positions.get('BEFORE'),
 		};
 		store.dispatch(action);
 		return (
@@ -142,10 +179,10 @@ storiesOf('Drag and Drop', module).
 	}).
 		add('Hover after rendering', () => {
 			const action = {
-				type: Actions.HOVER,
+				type: actions.HOVER,
 				dragged: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
 				target: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
-				position: Positions.get('AFTER'),
+				position: positions.get('AFTER'),
 			};
 			store.dispatch(action);
 			return (
@@ -162,10 +199,10 @@ storiesOf('Drag and Drop', module).
 		}).
 			add('Hover In', () => {
 				const action = {
-					type: Actions.HOVER,
+					type: actions.HOVER,
 					dragged: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
 					target: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
-					position: Positions.get('INTO'),
+					position: positions.get('INTO'),
 				};
 				store.dispatch(action);
 				return (
@@ -182,62 +219,62 @@ storiesOf('Drag and Drop', module).
 			});
 
 storiesOf('Interactive Tree', module).
-		add('DND Tree', () => (
-			<ReduxWrapper
-				store={DNDstore}
-				subscribe={DNDstore.subscribe}
-			>
-				<Tree
-					dispatch={DNDstore.dispatch}
-					renderNode={
-						(nodeData) => <ExampleNode
-							data={nodeData}
-						/>
-									}
-				/>
-			</ReduxWrapper>
-			)).
-		add('Select Node', () => (
-			<ReduxWrapper
-				store={selectionStore}
-				subscribe={selectionStore.subscribe}
-			>
-				<Tree
-					dispatch={selectionStore.dispatch}
-					renderNode={
-						(nodeData) => <ExampleNodeSelection
-							select={() => {
-								const action = {
-									type: Actions.SELECT,
-									selected: nodeData,
-								};
-								selectionStore.dispatch(action);
-							}}
-							data={nodeData}
-						/>
-									}
-				/>
-			</ReduxWrapper>
-			)).
-		add('Expand/Collapse Node', () => (
-			<ReduxWrapper
-				store={ExpandCollapseStore}
-				subscribe={ExpandCollapseStore.subscribe}
-			>
-				<Tree
-					dispatch={ExpandCollapseStore.dispatch}
-					renderNode={
-						(nodeData) => <ExampleNodeCollapse
-							click={() => {
-								const action = {
-									type: Actions.COLLAPSE,
-									collapsed: nodeData,
-								};
-								ExpandCollapseStore.dispatch(action);
-							}}
-							data={nodeData}
-						/>
-									}
-				/>
-			</ReduxWrapper>
-			));
+		add('Tree Rendering', rerenderOn(store.subscribe, () => (
+			<Tree
+				tree={store.getState().get('tree')}
+				renderNode={(nodeData) => (<ExampleNode
+					data={nodeData}
+				/>)}
+			/>
+		))).
+		add('DND Tree', rerenderOn(store.subscribe, () => (
+			<Tree
+				tree={store.getState().get('tree')}
+				cancelDrop={cancelDrop}
+				drop={drop}
+				hover={hover}
+				renderNode={(nodeData) => (<ExampleNode
+					data={nodeData}
+				/>)}
+			/>
+		))).
+		add('Select Node', rerenderOn(store.subscribe, () => (
+			<Tree
+				tree={store.getState().get('tree')}
+				cancelDrop={cancelDrop}
+				drop={drop}
+				hover={hover}
+				renderNode={
+					(nodeData) => <ExampleNodeSelection
+						select={() => {
+							const action = {
+								type: actions.SELECT,
+								selected: nodeData,
+							};
+							store.dispatch(action);
+						}}
+						data={nodeData}
+					/>
+							}
+			/>
+		))).
+		add('Expand/Collapse Node', rerenderOn(store.subscribe, () => (
+			<Tree
+				tree={store.getState().get('tree')}
+				cancelDrop={cancelDrop}
+				drop={drop}
+				hover={hover}
+				renderNode={
+					(nodeData) => <ExampleNodeCollapse
+						click={() => {
+							const action = {
+								type: actions.COLLAPSE,
+								collapsed: nodeData,
+							};
+							store.dispatch(action);
+						}}
+						data={nodeData}
+					/>
+							}
+			/>
+		)));

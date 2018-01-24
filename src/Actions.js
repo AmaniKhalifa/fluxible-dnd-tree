@@ -1,4 +1,4 @@
-const Actions = {
+const actions = {
 	COLLAPSE: 'COLLAPSE',
 	SELECT: 'SELECT',
 	CANCEL_DROP: 'CANCEL_DROP',
@@ -6,4 +6,4 @@ const Actions = {
 	HOVER: 'HOVER',
 };
 
-export default Actions;
+export default actions;
