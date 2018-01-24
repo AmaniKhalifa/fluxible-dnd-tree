@@ -110,7 +110,8 @@ const nodeTarget = {
 class Node extends Component {
 
 	componentWillReceiveProps(nextProps) {
-		if (!nextProps.isHovering && nextProps.node.has('hover')) {
+		const node = nextProps.node;
+		if (!nextProps.isHovering && node.has('hover')) {
 			nextProps.cancelDrop();
 		}
 	}
@@ -163,10 +164,10 @@ Node.propTypes = {
 	connectDropTarget: PropTypes.func.isRequired,
 	isDragging: PropTypes.bool.isRequired,
 	node: PropTypes.shape({}).isRequired,
-	drop: PropTypes.func.isRequired,
-	hover: PropTypes.func.isRequired,
-	cancelDrop: PropTypes.func.isRequired,
-	isHovering: PropTypes.bool.isRequired,
+	drop: PropTypes.func.isRequired, //eslint-disable-line
+	hover: PropTypes.func.isRequired, //eslint-disable-line
+	cancelDrop: PropTypes.func.isRequired, //eslint-disable-line
+	isHovering: PropTypes.bool.isRequired, //eslint-disable-line
 	children: PropTypes.node,
 	nodeRenderer: PropTypes.func.isRequired,
 };
