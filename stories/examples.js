@@ -2,7 +2,6 @@ import React from 'react';
 import FontAwesome from 'react-fontawesome';
 import PropTypes from 'prop-types';
 
-
 export function ExampleNodeCollapse({ data, click }) {
 	const icon = (!data.get('collapsed') && data.get('type') !== 'search') ?
 		'folder-open' : data.get('type');
@@ -16,10 +15,11 @@ export function ExampleNodeCollapse({ data, click }) {
 			<small>{data.get('title')}</small>
 		</span>
 	);
+
 }
 
 ExampleNodeCollapse.propTypes = {
-	data: PropTypes.any.isRequired,
+	data: PropTypes.shape({}).isRequired,
 	click: PropTypes.func.isRequired,
 };
 
@@ -37,7 +37,7 @@ export function ExampleNode({ data }) {
 }
 
 ExampleNode.propTypes = {
-	data: PropTypes.any.isRequired,
+	data: PropTypes.shape({}).isRequired,
 };
 
 
@@ -62,6 +62,6 @@ export function ExampleNodeSelection({ data, select }) {
 
 
 ExampleNodeSelection.propTypes = {
-	data: PropTypes.any.isRequired,
+	data: PropTypes.shape({}).isRequired,
 	select: PropTypes.func.isRequired,
 };
