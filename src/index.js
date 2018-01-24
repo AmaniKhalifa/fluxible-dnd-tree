@@ -1,12 +1,13 @@
-import Tree, { Positions } from './Tree';
-import Actions from './Actions';
+import Tree from './Tree';
+import actions from './actions';
+import positions from './positions';
 import { collapseNode, selectNode, removeAllEffects,
-	setHoverEffects, dropNode } from './Reducers';
+	setHoverEffects, dropNode } from './reducers';
 
-export const Reducers = { collapseNode,
+export const reducers = { collapseNode,
 	selectNode,
 	removeAllEffects,
 	setHoverEffects,
 	dropNode };
-export { Positions, Actions };
+export { positions, actions };
 export default Tree;

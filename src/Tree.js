@@ -3,7 +3,6 @@ import { DragDropContext } from 'react-dnd';
 import PropTypes from 'prop-types';
 import HTML5Backend from 'react-dnd-html5-backend';
 import { Map, List } from 'immutable';
-import Actions from './Actions';
 import Node from './Node';
 
 class Tree extends Component {
@@ -33,31 +32,6 @@ class Tree extends Component {
 		});
 	}
 
-	cancelDrop() {
-		const action = {
-			type: Actions.CANCEL_DROP,
-		};
-		this.props.dispatch(action);
-	}
-	drop(dragged, target, position) {
-		const action = {
-			type: Actions.DROP,
-			dragged: dragged.get('node'),
-			target: target.get('node'),
-			position,
-		};
-		this.props.dispatch(action);
-	}
-	hover(dragged, hovered, position) {
-		const action = {
-			type: Actions.HOVER,
-			dragged: dragged.get('node'),
-			target: hovered.get('node'),
-			position,
-		};
-		this.props.dispatch(action);
-
-	}
 
 	render() {
 		const buildNode = (node) => {
@@ -70,9 +44,9 @@ class Tree extends Component {
 			return (<Node
 				key={node.get('id')}
 				isDescendant={this.isDescendant}
-				cancelDrop={(...args) => this.cancelDrop(...args)}
-				drop={(...args) => this.drop(...args)}
-				hover={(...args) => this.hover(...args)}
+				cancelDrop={(...args) => this.props.cancelDrop(...args)}
+				drop={(...args) => this.props.drop(...args)}
+				hover={(...args) => this.props.hover(...args)}
 				node={node}
 				nodeRenderer={this.props.renderNode}
 			> {node.get('children') && children }
@@ -87,19 +61,20 @@ class Tree extends Component {
 	}
 }
 Tree.defaultProps = {
-	dispatch() {},
+	cancelDrop() {},
+	drop() {},
+	hover() {},
 	renderNode() {},
 	tree: [],
 };
+
 Tree.propTypes = {
-	dispatch: PropTypes.func.isRequired,
-	tree: PropTypes.any.isRequired,
+	cancelDrop: PropTypes.func,
+	drop: PropTypes.func,
+	hover: PropTypes.func,
+	tree: PropTypes.shape([]).isRequired,
 	renderNode: PropTypes.func.isRequired,
 };
-const Positions = Map({
-	INTO: 'into',
-	BEFORE: 'before',
-	AFTER: 'after',
-});
-export { Positions };
+
+
 export default DragDropContext(HTML5Backend)(Tree);
