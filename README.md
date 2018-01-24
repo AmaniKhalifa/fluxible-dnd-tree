@@ -6,12 +6,7 @@
 
 ### How do I get set up? ###
 
-* run npm install 
-* build bundles with
-	```sh
-	npm run build 
-	```
-* Develope with
-	```sh
-	npm run develope 
-	```
+* run npm install
+* Usage examples are in storybook.
+* Running storybook using : `npm run storybook`
+* In your browser, go to http://localhost:9001/
