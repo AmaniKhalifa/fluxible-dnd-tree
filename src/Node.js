@@ -1,17 +1,10 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { DragSource, DropTarget } from 'react-dnd';
 import { fromJS } from 'immutable';
 import ItemTypes from './ItemTypes';
-import { Positions } from './Tree';
-
-
-const style = {
-	marginBottom: '.5rem',
-	padding: '0.5rem 1rem',
-	margin: '0.0rem',
-};
+import positions from './positions';
+import './css/styles.css';
 
 function isDescendant(node, id) {
 	if (node.has('children')) {
@@ -27,39 +20,44 @@ function isDescendant(node, id) {
 	}
 	return undefined;
 }
+
+
+const getMousePosition = (monitor) => monitor.getClientOffset().y;
+
+
+const getTopPixels = (clientOffset, hoverBoundingRect) =>
+	clientOffset - hoverBoundingRect.top;
+
+
 const getHoverPos = (component, monitor) => {
-	const hoverBoundingRect = ReactDOM.findDOMNode(component).getBoundingClientRect();
+	const rawComponent = component.getDecoratedComponentInstance();
+	const hoverBoundingRect = rawComponent.element.getBoundingClientRect();
+
 	const nodeChildren = document.getElementById(
 		`children_node_${component.props.node.get('id')}`);
 	const nodeChildrenHeight = (nodeChildren) ? nodeChildren.offsetHeight : 0;
+
 	const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top -
 		nodeChildrenHeight) / 2;
-	const tolerance = 8;
+	const tolerance = 3;
 	const hoverTolerance = (hoverBoundingRect.bottom - hoverBoundingRect.top -
 		nodeChildrenHeight) / tolerance;
 
-
-	// Determine mouse position
-	const clientOffset = monitor.getClientOffset();
-
-	// Get pixels to the top
-	const hoverClientY = clientOffset.y - hoverBoundingRect.top;
-
+	const clientOffset = getMousePosition(monitor);
+	const hoverClientY = getTopPixels(clientOffset, hoverBoundingRect);
 	let hoverPosition = null;
 
-	// Dragging downwards
-	if (hoverClientY <= (hoverMiddleY - hoverTolerance)) {
-		hoverPosition = Positions.get('BEFORE');
+	const isDraggingDown = hoverClientY <= (hoverMiddleY - hoverTolerance);
+	const isDraggingUp = hoverClientY > (hoverMiddleY + hoverTolerance);
+	if (isDraggingDown) {
+		hoverPosition = positions.get('BEFORE');
 	}
-	// Dragging upwards
-	else if (hoverClientY > (hoverMiddleY + hoverTolerance)) {
-		hoverPosition = Positions.get('AFTER');
-
+	else if (isDraggingUp) {
+		hoverPosition = positions.get('AFTER');
 	}
 
 	else {
-		hoverPosition = Positions.get('INTO');
-
+		hoverPosition = positions.get('INTO');
 	}
 
 	return hoverPosition;
@@ -95,10 +93,7 @@ const nodeTarget = {
 		if (monitor.isOver({ shallow: true })) {
 			const hoverPosition = getHoverPos(component, monitor);
 			const dragged = fromJS(monitor.getItem());
-			const currentHover = `${dragged.get('id')}-${
-					hovered.get('id')}-${hoverPosition}`;
-			if (component.lastHover === currentHover) { return; }
-			component.lastHover = currentHover;
+			if (hovered.get('hover') === hoverPosition) { return; }
 			hovered.get('hover')(dragged, hovered, hoverPosition);
 		}
 	},
@@ -114,6 +109,14 @@ const nodeTarget = {
 
 class Node extends Component {
 
+	componentWillReceiveProps(nextProps) {
+		const node = nextProps.node;
+		if (!nextProps.isHovering && node.has('hover')) {
+			nextProps.cancelDrop();
+		}
+	}
+
+
 	render() {
 		const { connectDragSource, connectDropTarget, isDragging, children,
 				nodeRenderer, node } = this.props;
@@ -121,41 +124,35 @@ class Node extends Component {
 		const nodeJSX = nodeRenderer(node);
 
 		if (node.get('rootNode')) {
-			return (<div style={{ width: '100%' }}>
+			return (
 				<ul
-					id={`node_${node.get('id')}`}
-					style={{ listStyleType: 'none', ...style }}
+					id={'root_node'}
+					className={'no-list'}
 				>
 					{children}
 				</ul>
-			</div>);
+			);
 		}
 
 		return connectDragSource(connectDropTarget(
-			<div>
-				<li
-					className={`node${
-						node.get('hover') ? ` ${node.get('hover')} hover` : ''
-						}${isDragging ? ' drag' : ''}`}
-					id={`node_${node.get('id')}`}
-					style={{
-						...style,
-						cursor: 'move',
-						display: 'block',
-						width: '100%',
-					}}
+			(<li
+				ref={(element) => { this.element = element; }}
+				className={`no-list node${
+					node.get('hover') ? ` ${node.get('hover')} hover` : ''
+					}${isDragging ? ' drag' : ''}
+					${node.get('selected') ? ' selected' : ''}
+					${node.has('className') ? node.get('className') : ''}`}
+				id={`node_${node.get('id')}`}
+			>
+				{nodeJSX}
+				<ul
+					className={`no-list children${
+						node.get('collapsed') ? ' collapsed' : ''}`}
+					id={`children_node_${node.get('id')}`}
 				>
-					{nodeJSX}
-					<ul
-						className={`children${
-							node.get('collapsed') ? ' collapsed' : ''}`}
-						id={`children_node_${node.get('id')}`}
-						style={{ listStyleType: 'none' }}
-					>
-						{children}
-					</ul>
-				</li>
-			</div>
+					{children}
+				</ul>
+			</li>)
 					,
 				));
 
@@ -166,15 +163,23 @@ Node.propTypes = {
 	connectDragSource: PropTypes.func.isRequired,
 	connectDropTarget: PropTypes.func.isRequired,
 	isDragging: PropTypes.bool.isRequired,
-	node: PropTypes.any.isRequired,
+	node: PropTypes.shape({}).isRequired,
+	drop: PropTypes.func.isRequired, //eslint-disable-line
+	hover: PropTypes.func.isRequired, //eslint-disable-line
+	cancelDrop: PropTypes.func.isRequired, //eslint-disable-line
+	isHovering: PropTypes.bool.isRequired, //eslint-disable-line
 	children: PropTypes.node,
-	drop: PropTypes.func.isRequired,
-	hover: PropTypes.func.isRequired,
-	cancelDrop: PropTypes.func.isRequired,
-	isHovering: PropTypes.bool.isRequired,
 	nodeRenderer: PropTypes.func.isRequired,
 };
 
+Node.defaultProps = {
+	children: undefined,
+	isHovering: false,
+	cancelDrop() {},
+	hover() {},
+	drop() {},
+
+};
 
 export default DropTarget(ItemTypes.NODE, nodeTarget, (connect, monitor) => ({
 	connectDropTarget: connect.dropTarget(),
