@@ -7,14 +7,21 @@ module.exports = {
 		filename: 'index.js',
 		library: 'uber-tree',
 		libraryTarget: 'umd',
-		umdNamedDefine: true
+		umdNamedDefine: true,
 	},
 	module: {
-		loaders: [
+		rules: [
 			{
 				test: /\.js$/,
 				loader: 'babel-loader',
 				exclude: /node_modules/,
+			},
+			{
+				test: /\.css$/,
+				use: [
+					'style-loader',
+					'css-loader',
+				],
 			},
 		],
 	},
