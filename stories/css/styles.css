@@ -3,11 +3,11 @@
 }
 
 .node.hover.after {
-	border-bottom: 0.1rem solid
+	border-bottom: 0.1rem solid !important;
 }
 
 .node.hover.before {
-	border-top: 0.1rem solid
+	border-top: 0.1rem solid !important;
 }
 
 .node.drag {
