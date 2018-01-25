@@ -6,11 +6,10 @@ export function ExampleNodeCollapse({ data, click }) {
 	const icon = (!data.get('collapsed') && data.get('type') !== 'search') ?
 		'folder-open' : data.get('type');
 	return (
-		<span onClick={click} style={{ padding: '0.0rem 0.5rem', border: '0.1rem' }} >
+		<span onClick={click} className="container" >
 			<FontAwesome
 				name={icon}
-				style={{ padding: '0.0rem 0.5rem',
-					textShadow: '0 1px 0 rgba(0, 0, 0, 0.1)' }}
+				className="icon"
 			/>
 			<small>{data.get('title')}</small>
 		</span>
@@ -25,11 +24,10 @@ ExampleNodeCollapse.propTypes = {
 
 export function ExampleNode({ data }) {
 	return (
-		<span style={{ padding: '0.0rem 0.5rem', border: '0.1rem' }} >
+		<span className="container" >
 			<FontAwesome
 				name={data.get('type')}
-				style={{ padding: '0.0rem 0.5rem',
-					textShadow: '0 1px 0 rgba(0, 0, 0, 0.1)' }}
+				className="icon"
 			/>
 			<small>{data.get('title')}</small>
 		</span>
@@ -43,7 +41,7 @@ ExampleNode.propTypes = {
 
 export function ExampleNodeSelection({ data, select }) {
 	return (
-		<span style={{ padding: '0.0rem 0.5rem', border: '0.1rem' }} >
+		<span className="container" >
 			<input
 				id={`checkbox_node_${data.get('id')}`}
 				type="checkbox"
@@ -52,8 +50,7 @@ export function ExampleNodeSelection({ data, select }) {
 			/>
 			<FontAwesome
 				name={data.get('type')}
-				style={{ padding: '0.0rem 0.5rem',
-					textShadow: '0 1px 0 rgba(0, 0, 0, 0.1)' }}
+				className="icon"
 			/>
 			<small>{data.get('title')}</small>
 		</span>
