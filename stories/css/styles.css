@@ -3,17 +3,26 @@
 }
 
 .node.hover.after {
-	border-bottom: 0.1em solid;
+	border-bottom: 1.6px solid;
 }
 
 .node.hover.before {
-	border-top: 0.1em solid;
+	border-top: 1.6px solid;
 }
 
 .node.drag {
-	opacity: 0.4
+	opacity: 0.4;
 }
 
 .children.collapsed {
 	display: none;
+}
+
+.container{
+	padding: 0px 8px;
+	border: 1.6px;
+}
+
+.icon{
+	padding: 0px 8px;
 }
