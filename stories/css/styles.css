@@ -3,11 +3,11 @@
 }
 
 .node.hover.after {
-	border-bottom: 1.6px solid;
+	border-bottom: 1px solid;
 }
 
 .node.hover.before {
-	border-top: 1.6px solid;
+	border-top: 1px solid;
 }
 
 .node.drag {
@@ -20,7 +20,7 @@
 
 .container{
 	padding: 0px 8px;
-	border: 1.6px;
+	border: 1px;
 }
 
 .icon{
