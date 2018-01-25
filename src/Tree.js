@@ -55,9 +55,8 @@ class Tree extends Component {
 
 		const nodes = buildNode(this.state.tree.get(0));
 		return (
-			<span>
-				<div style={{ width: '100%' }}> {nodes} </div>
-			</span>);
+			<div> {nodes} </div>
+		);
 	}
 }
 Tree.defaultProps = {
