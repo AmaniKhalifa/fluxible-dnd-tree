@@ -5,7 +5,7 @@ import { fromJS } from 'immutable';
 import PropTypes from 'prop-types';
 import { ExampleNode, ExampleNodeSelection,
 	ExampleNodeCollapse } from './examples';
-import Tree, { positions, reducers, actions } from '../src/index';
+import Tree, { positions, reducers, actions, actionCreators } from '../src/index';
 import './css/styles.css';
 import './css/font-awesome.min.css';
 
@@ -80,33 +80,17 @@ function reducer(state, actionObj) {
 }
 
 function cancelDrop() {
-	const action = {
-		type: actions.CANCEL_DROP,
-	};
-	store.dispatch(action);
+	store.dispatch(actionCreators.createCancelDropAction());
 }
 
 
 function drop(dragged, target, position) {
-	const action = {
-		type: actions.DROP,
-		dragged: dragged.get('node'),
-		target: target.get('node'),
-		position,
-	};
-	store.dispatch(action);
+	store.dispatch(actionCreators.createDropAction(dragged, target, position));
 }
 
 
-function hover(dragged, hovered, position) {
-	const action = {
-		type: actions.HOVER,
-		dragged: dragged.get('node'),
-		target: hovered.get('node'),
-		position,
-	};
-	store.dispatch(action);
-
+function hover(dragged, target, position) {
+	store.dispatch(actionCreators.createHoverAction(dragged, target, position));
 }
 
 
