@@ -19,17 +19,18 @@ class Tree extends Component {
 			]),
 		};
 	}
+
+
 	componentWillReceiveProps(newProps) {
-		const tree = List([
-			Map({ title: 'DummyNode',
-				id: '__1',
-				rootNode: true,
-				children: newProps.tree,
-			}),
-		]);
+		const tree = this.state.tree;
 		this.setState({
-			tree,
+			tree: List.of(tree.first().set('children', newProps.tree)),
 		});
+	}
+
+
+	shouldComponentUpdate(newProps) {
+		return newProps.tree !== this.props.tree;
 	}
 
 
@@ -59,6 +60,7 @@ class Tree extends Component {
 		);
 	}
 }
+
 Tree.defaultProps = {
 	cancelDrop() {},
 	drop() {},

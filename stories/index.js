@@ -6,55 +6,17 @@ import PropTypes from 'prop-types';
 import { ExampleNode, ExampleNodeSelection,
 	ExampleNodeCollapse } from './examples';
 import Tree, { positions, reducers, actions } from '../src/index';
+import small from './data_S';
+import medium from './data_M';
+import large from './data_L';
+import xlarge from './data_XL';
+
 import './css/styles.css';
 import './css/font-awesome.min.css';
 
 
 const initState = fromJS({
-	tree: [
-		{ title: 'Root',
-			id: 1,
-			type: 'folder',
-			selected: false,
-			collapsed: false,
-			children: [ { title: 'Child',
-				selected: false,
-				collapsed: false,
-				id: 2,
-				type: 'folder',
-				children: [ {
-					title: 'Child 22 abc def ghi',
-					selected: false,
-					collapsed: false,
-					id: 3,
-					type: 'search',
-				} ],
-			}, {
-				title: 'Hovered Child',
-				selected: false,
-				collapsed: false,
-				id: 8,
-				type: 'folder',
-			} ] },
-			{ title: 'Empty', id: 4, type: 'search', selected: false, collapsed: false },
-		{ title: 'Two Nodes',
-			selected: false,
-			collapsed: false,
-			id: 5,
-			type: 'folder',
-			children: [
-				{ title: 'Node 1',
-					selected: false,
-					collapsed: false,
-					id: 6,
-					type: 'search' },
-				{ title: 'Node 2',
-					selected: false,
-					collapsed: false,
-					id: 7,
-					type: 'folder' },
-			] },
-	],
+	tree: xlarge,
 });
 
 const store = createStore(reducer, initState);
@@ -79,6 +41,7 @@ function reducer(state, actionObj) {
 	}
 }
 
+
 function cancelDrop() {
 	const action = {
 		type: actions.CANCEL_DROP,
@@ -101,8 +64,8 @@ function drop(dragged, target, position) {
 function hover(dragged, hovered, position) {
 	const action = {
 		type: actions.HOVER,
-		dragged: dragged.get('node'),
-		target: hovered.get('node'),
+		dragged: dragged,
+		target: hovered,
 		position,
 	};
 	store.dispatch(action);

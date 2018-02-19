@@ -40,8 +40,19 @@ export function removeAllEffects(nodes) {
 }
 
 
+function hasEffects(nodes) {
+	return nodes.map(function(node) {
+		if (node.has('children')) {
+			return hasEffects(node.get('children'));
+		}
+		return node.has('hover');
+	}).filter(Boolean).first();
+}
+
+
 export function setHoverEffects(tree, action, canDrop) {
-	const treeCopy = removeAllEffects(tree);
+	const effects = hasEffects(tree);
+	const treeCopy = effects ? removeAllEffects(tree) : tree;
 	if (!canDrop(action)) {
 		return treeCopy;
 	}
@@ -49,7 +60,7 @@ export function setHoverEffects(tree, action, canDrop) {
 	newNode = newNode.
 		set('collapsed', false).
 		set('hover', action.get('position'));
-	if (newNode.has('children')) {
+	if (newNode.has('children') && effects) {
 		newNode = newNode.set('children', removeAllEffects(newNode.get('children')));
 	}
 	return replaceNode(treeCopy, newNode);

@@ -88,13 +88,13 @@ const nodeSource = {
 };
 
 const nodeTarget = {
-	hover(hoveredJS, monitor, component) {
-		const hovered = fromJS(hoveredJS);
+	hover(hovered, monitor, component) {
+		const hoveredNode = fromJS(hovered.node);
 		if (monitor.isOver({ shallow: true })) {
 			const hoverPosition = getHoverPos(component, monitor);
-			const dragged = fromJS(monitor.getItem());
-			if (hovered.get('hover') === hoverPosition) { return; }
-			hovered.get('hover')(dragged, hovered, hoverPosition);
+			const dragged = fromJS(monitor.getItem().node);
+			if (hoveredNode.get('hover') === hoverPosition) { return; }
+			hovered.hover(dragged, hoveredNode, hoverPosition);
 		}
 	},
 	drop(target, monitor, component) {
@@ -116,6 +116,9 @@ class Node extends Component {
 		}
 	}
 
+	shouldComponentUpdate(newProps) {
+		return newProps.node !== this.props.node;
+	}
 
 	render() {
 		const { connectDragSource, connectDropTarget, isDragging, children,
