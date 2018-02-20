@@ -65,24 +65,25 @@ const getHoverPos = (component, monitor) => {
 
 const nodeSource = {
 	beginDrag(dragged) {
+		dragged.drag(dragged.node);
 		return dragged;
 	},
-	endDrag(draggedJS, monitor) {
-		const target = fromJS(monitor.getDropResult());
-		const dragged = fromJS(draggedJS);
-		const hasTarget = target && target.has('target') &&
-			target.hasIn([ 'target', 'node' ]);
+	endDrag(dragged, monitor) {
+		const target = monitor.getDropResult();
+		const draggedNode = fromJS(dragged.node);
+		const hasTarget = target && target.target &&
+			target.target.node;
 		const targetIsDragged = hasTarget &&
-			target.getIn([ 'target', 'node', 'id' ]) === dragged.getIn([ 'node', 'id' ]);
+			target.target.node.id === draggedNode.get('id');
 		const targetUnderSource = hasTarget &&
-							isDescendant(dragged.get('node'),
-							target.getIn([ 'target', 'node', 'id' ]));
+							isDescendant(draggedNode,
+							target.target.node.id);
 		if (hasTarget && !targetIsDragged && !targetUnderSource) {
-			dragged.get('drop')(dragged, target.get('target'),
-				target.get('position'));
+			dragged.drop(draggedNode, fromJS(target.target.node),
+				target.position);
 		}
 		else {
-			dragged.get('cancelDrop')();
+			dragged.cancelDrop();
 		}
 	},
 };
@@ -112,7 +113,7 @@ class Node extends Component {
 	componentWillReceiveProps(nextProps) {
 		const node = nextProps.node;
 		if (!nextProps.isHovering && node.has('hover')) {
-			nextProps.cancelDrop();
+			nextProps.stopHover();
 		}
 	}
 
@@ -121,9 +122,8 @@ class Node extends Component {
 	}
 
 	render() {
-		const { connectDragSource, connectDropTarget, isDragging, children,
+		const { connectDragSource, connectDropTarget, children,
 				nodeRenderer, node } = this.props;
-
 		const nodeJSX = nodeRenderer(node);
 
 		if (node.get('rootNode')) {
@@ -142,8 +142,8 @@ class Node extends Component {
 				ref={(element) => { this.element = element; }}
 				className={`no-list node${
 					node.get('hover') ? ` ${node.get('hover')} hover` : ''
-					}${isDragging ? ' drag' : ''}
-					${node.get('selected') ? ' selected' : ''}
+				}${node.has('drag') ? ' drag' : ''}
+					${node.has('selected') ? ' selected' : ''}
 					${node.has('className') ? node.get('className') : ''}`}
 				id={`node_${node.get('id')}`}
 			>
@@ -165,12 +165,13 @@ class Node extends Component {
 Node.propTypes = {
 	connectDragSource: PropTypes.func.isRequired,
 	connectDropTarget: PropTypes.func.isRequired,
-	isDragging: PropTypes.bool.isRequired,
 	node: PropTypes.shape({}).isRequired,
+	drag: PropTypes.func.isRequired, //eslint-disable-line
 	drop: PropTypes.func.isRequired, //eslint-disable-line
 	hover: PropTypes.func.isRequired, //eslint-disable-line
 	cancelDrop: PropTypes.func.isRequired, //eslint-disable-line
 	isHovering: PropTypes.bool.isRequired, //eslint-disable-line
+	stopHover: PropTypes.func.isRequired, //eslint-disable-line
 	children: PropTypes.node,
 	nodeRenderer: PropTypes.func.isRequired,
 };
@@ -179,9 +180,10 @@ Node.defaultProps = {
 	children: undefined,
 	isHovering: false,
 	cancelDrop() {},
+	stopHover() {},
 	hover() {},
 	drop() {},
-
+	drag() {},
 };
 
 export default DropTarget(ItemTypes.NODE, nodeTarget, (connect, monitor) => ({

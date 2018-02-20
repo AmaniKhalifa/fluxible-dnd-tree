@@ -16,43 +16,66 @@ export function selectNode(tree, action) {
 
 
 function replaceNode(nodes, newNode) {
-	return nodes.map(function(node) {
+	let changed = false;
+	const newNodes = nodes.map(function(node) {
 		if (node.get('id') === newNode.get('id')) {
+			changed = true;
 			return newNode;
 		}
 		else if (node.has('children')) {
-			return node.set('children', replaceNode(node.get('children'), newNode));
+			const children = replaceNode(node.get('children'), newNode);
+			if (children !== node.get('children')) { changed = true; }
+			return node.set('children', children);
 		}
 		return node;
 	});
+	if (changed) {
+		return newNodes;
+	}
+	else {
+		return nodes;
+	}
 }
 
 
-export function removeAllEffects(nodes) {
-	return nodes.map(function(node) {
-		const newNode = node.remove('hover');
+export function cancelDrop(nodes) {
+	return removeAllEffects(nodes, true);
+}
+
+
+export function stopHover(nodes) {
+	return removeAllEffects(nodes);
+}
+
+
+export function removeAllEffects(nodes, drag) {
+	let changed = false;
+
+	const newNodes = nodes.map(function(node) {
+		let newNode = node.remove('hover');
+		if (drag) {
+			newNode = newNode.remove('drag');
+		}
+		if (newNode !== node) { changed = true; }
 		if (newNode.has('children')) {
 			const children = removeAllEffects(newNode.get('children'));
+			if (children !== newNode.get('children')) { changed = true; }
 			return newNode.set('children', children);
 		}
 		return newNode;
 	});
-}
-
-
-function hasEffects(nodes) {
-	return nodes.map(function(node) {
-		if (node.has('children')) {
-			return hasEffects(node.get('children'));
-		}
-		return node.has('hover');
-	}).filter(Boolean).first();
+	if (changed) {
+		return newNodes;
+	}
+	else {
+		return nodes;
+	}
 }
 
 
 export function setHoverEffects(tree, action, canDrop) {
-	const effects = hasEffects(tree);
-	const treeCopy = effects ? removeAllEffects(tree) : tree;
+	const treeCopy = removeAllEffects(tree);
+	const hasEffects = treeCopy !== tree;
 	if (!canDrop(action)) {
 		return treeCopy;
 	}
@@ -60,7 +83,7 @@ export function setHoverEffects(tree, action, canDrop) {
 	newNode = newNode.
 		set('collapsed', false).
 		set('hover', action.get('position'));
-	if (newNode.has('children') && effects) {
+	if (newNode.has('children') && hasEffects) {
 		newNode = newNode.set('children', removeAllEffects(newNode.get('children')));
 	}
 	return replaceNode(treeCopy, newNode);
@@ -134,7 +157,6 @@ function moveNode(tree, action) {
 	index = (position === positions.get('BEFORE')) ? index : index + 1;
 	return nodes.insert(index, dragged);
 
-
 }
 
 
@@ -143,8 +165,15 @@ export function dropNode(tree, action, canDrop) {
 		return tree;
 	}
 	const treeCopy = removeAllEffects(tree);
-	const newAction = action.set('target',
+	let newAction = action.set('target',
 		removeAllEffects(List([ action.get('target') ])).first());
-
+	const dragged = newAction.get('dragged');
+	newAction = newAction.set('dragged', dragged.remove('drag'));
 	return moveNode(treeCopy, newAction);
+}
+
+
+export function dragNode(tree, action) {
+	const newNode = action.get('dragged').set('drag', true);
+	return replaceNode(tree, newNode);
 }
