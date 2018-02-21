@@ -4,7 +4,9 @@
   "description": "Ubermetrics draggable tree",
   "main": "index.js",
   "scripts": {
-    "build": "webpack",
+    "dist": "npm run lint && npm run build",
+	"build": "webpack",
+    "lint": "eslint src",
     "develope": "webpack-dev-server --hot --inline",
     "storybook": "start-storybook -p 9001 -c .storybook"
   },
