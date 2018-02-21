@@ -20,7 +20,7 @@
 	opacity: 0.4;
 }
 
-.children.collapsed {
+.collapsed .children {
 	display: none;
 }
 

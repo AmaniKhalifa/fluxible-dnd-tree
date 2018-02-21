@@ -45,17 +45,17 @@ const getHoverPos = (component, monitor) => {
 
 	const clientOffset = getMousePosition(monitor);
 	const hoverClientY = getTopPixels(clientOffset, hoverBoundingRect);
-	let hoverPosition = null;
 
 	const isDraggingDown = hoverClientY <= (hoverMiddleY - hoverTolerance);
 	const isDraggingUp = hoverClientY > (hoverMiddleY + hoverTolerance);
+
+	let hoverPosition = null;
 	if (isDraggingDown) {
 		hoverPosition = positions.get('BEFORE');
 	}
 	else if (isDraggingUp) {
 		hoverPosition = positions.get('AFTER');
 	}
-
 	else {
 		hoverPosition = positions.get('INTO');
 	}
@@ -68,19 +68,19 @@ const nodeSource = {
 		dragged.drag(dragged.node);
 		return dragged;
 	},
+
+
 	endDrag(dragged, monitor) {
 		const target = monitor.getDropResult();
 		const draggedNode = fromJS(dragged.node);
-		const hasTarget = target && target.target &&
-			target.target.node;
+		const hasTarget = target && target.target && target.target.node;
 		const targetIsDragged = hasTarget &&
 			target.target.node.id === draggedNode.get('id');
 		const targetUnderSource = hasTarget &&
-							isDescendant(draggedNode,
-							target.target.node.id);
+			isDescendant(draggedNode, target.target.node.id);
+
 		if (hasTarget && !targetIsDragged && !targetUnderSource) {
-			dragged.drop(draggedNode, fromJS(target.target.node),
-				target.position);
+			dragged.drop(draggedNode, fromJS(target.target.node), target.position);
 		}
 		else {
 			dragged.cancelDrop();
@@ -107,6 +107,22 @@ const nodeTarget = {
 		return undefined;
 	},
 };
+
+
+function calculateNodeClassNames(node) {
+	const hoverClass = node.has('hover') ? ` ${node.get('hover')} hover` : '';
+	const dragClass = node.has('drag') ? ' drag' : '';
+	const selectedClass = node.has('selected') ? ' selected' : '';
+	const customClass = node.has('className') ? node.get('className') : '';
+	const collapsedClass = node.get('collapsed') ? ' collapsed' : '';
+
+	return hoverClass +
+		dragClass +
+		selectedClass +
+		customClass +
+		collapsedClass;
+}
+
 
 class Node extends Component {
 
