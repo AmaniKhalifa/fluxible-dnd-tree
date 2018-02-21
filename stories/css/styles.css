@@ -1,3 +1,9 @@
+.node {
+	padding: 8px;
+	margin: 0px;
+	cursor: move;
+}
+
 .node.hover.into {
 	background-color: #e4dedd
 }
