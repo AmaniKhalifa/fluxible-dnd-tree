@@ -19,17 +19,20 @@ class Tree extends Component {
 			]),
 		};
 	}
+
+
 	componentWillReceiveProps(newProps) {
-		const tree = List([
-			Map({ title: 'DummyNode',
-				id: '__1',
-				rootNode: true,
-				children: newProps.tree,
-			}),
-		]);
 		this.setState({
-			tree,
+			tree: this.state.tree.set(
+					0,
+					this.state.tree.first().
+					set('children', newProps.tree)),
 		});
+	}
+
+
+	shouldComponentUpdate(newProps) {
+		return newProps.tree !== this.props.tree;
 	}
 
 
@@ -45,11 +48,13 @@ class Tree extends Component {
 				key={node.get('id')}
 				isDescendant={this.isDescendant}
 				cancelDrop={(...args) => this.props.cancelDrop(...args)}
+				drag={(...args) => this.props.drag(...args)}
 				drop={(...args) => this.props.drop(...args)}
 				hover={(...args) => this.props.hover(...args)}
+				stopHover={(...args) => this.props.stopHover(...args)}
 				node={node}
 				nodeRenderer={this.props.renderNode}
-			> {node.get('children') && children }
+			> {node.get('children') && children}
 			</Node>);
 		};
 
@@ -59,17 +64,22 @@ class Tree extends Component {
 		);
 	}
 }
+
 Tree.defaultProps = {
 	cancelDrop() {},
 	drop() {},
 	hover() {},
 	renderNode() {},
+	stopHover() {},
+	drag() {},
 	tree: [],
 };
 
 Tree.propTypes = {
 	cancelDrop: PropTypes.func,
+	stopHover: PropTypes.func,
 	drop: PropTypes.func,
+	drag: PropTypes.func,
 	hover: PropTypes.func,
 	tree: PropTypes.shape([]).isRequired,
 	renderNode: PropTypes.func.isRequired,

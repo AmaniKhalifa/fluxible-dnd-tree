@@ -6,59 +6,31 @@ import PropTypes from 'prop-types';
 import { ExampleNode, ExampleNodeSelection,
 	ExampleNodeCollapse } from './examples';
 import Tree, { positions, reducers, actions, actionCreators } from '../src/index';
+import medium from './data/data_M';
+import large from './data/data_L';
+import nestedXL from './data/data_nested_XL';
+// import xlarge from './data/data_XL';
+// import nested_xxl from './data/data_nested_XXL';
+// import small from './data/data_S';
+
+
 import './css/styles.css';
 import './css/font-awesome.min.css';
 
 
 const initState = fromJS({
-	tree: [
-		{ title: 'Root',
-			id: 1,
-			type: 'folder',
-			selected: false,
-			collapsed: false,
-			children: [ { title: 'Child',
-				selected: false,
-				collapsed: false,
-				id: 2,
-				type: 'folder',
-				children: [ {
-					title: 'Child 22 abc def ghi',
-					selected: false,
-					collapsed: false,
-					id: 3,
-					type: 'search',
-				} ],
-			}, {
-				title: 'Hovered Child',
-				selected: false,
-				collapsed: false,
-				id: 8,
-				type: 'folder',
-			} ] },
-			{ title: 'Empty', id: 4, type: 'search', selected: false, collapsed: false },
-		{ title: 'Two Nodes',
-			selected: false,
-			collapsed: false,
-			id: 5,
-			type: 'folder',
-			children: [
-				{ title: 'Node 1',
-					selected: false,
-					collapsed: false,
-					id: 6,
-					type: 'search' },
-				{ title: 'Node 2',
-					selected: false,
-					collapsed: false,
-					id: 7,
-					type: 'folder' },
-			] },
-	],
+	tree: medium,
+});
+const largeState = fromJS({
+	tree: large,
+});
+const xlState = fromJS({
+	tree: nestedXL,
 });
 
 const store = createStore(reducer, initState);
-
+const largeStore = createStore(reducer, largeState);
+const xlStore = createStore(reducer, xlState);
 
 function reducer(state, actionObj) {
 	const action = fromJS(actionObj);
@@ -68,9 +40,13 @@ function reducer(state, actionObj) {
 	case actions.SELECT:
 		return state.set('tree', reducers.selectNode(state.get('tree'), action));
 	case actions.CANCEL_DROP:
-		return state.set('tree', reducers.removeAllEffects(state.get('tree')));
+		return state.set('tree', reducers.cancelDrop(state.get('tree')));
+	case actions.STOP_HOVER:
+		return state.set('tree', reducers.stopHover(state.get('tree')));
 	case actions.DROP:
 		return state.set('tree', reducers.dropNode(state.get('tree'), action, canDrop));
+	case actions.DRAG:
+		return state.set('tree', reducers.dragNode(state.get('tree'), action));
 	case actions.HOVER:
 		return state.set('tree',
 			reducers.setHoverEffects(state.get('tree'), action, canDrop));
@@ -79,18 +55,46 @@ function reducer(state, actionObj) {
 	}
 }
 
-function cancelDrop() {
-	store.dispatch(actionCreators.createCancelDropAction());
+
+function cancelDrop(s) {
+	return () => {
+		s.dispatch(actionCreators.createCancelDropAction());
+	};
 }
 
 
-function drop(dragged, target, position) {
-	store.dispatch(actionCreators.createDropAction(dragged, target, position));
+function drop(s) {
+	return (dragged, target, position) => {
+		s.dispatch(actionCreators.createDropAction(dragged, target, position));
+	};
 }
 
 
-function hover(dragged, target, position) {
-	store.dispatch(actionCreators.createHoverAction(dragged, target, position));
+function hover(s) {
+	return (dragged, target, position) => {
+		s.dispatch(actionCreators.createHoverAction(dragged, target, position));
+	};
+}
+
+function stopHover(s) {
+	return () => {
+		const action = {
+			type: actions.STOP_HOVER,
+		};
+		s.dispatch(action);
+	};
+}
+
+
+function drag(s) {
+	return (dragged) => {
+		const action = {
+			type: actions.DRAG,
+			dragged,
+		};
+		s.dispatch(action);
+	};
+
 }
 
 
@@ -108,7 +112,11 @@ class Subscriber extends Component {
 		super(props);
 
 		this.unsubscribe = props.subscribe(() => {
-			this.setState({ r: Math.random() });
+			if (this.rf) { return; }
+			this.rf = window.requestAnimationFrame(() => {
+				this.setState({ r: Math.random() });
+				this.rf = undefined;
+			});
 		});
 	}
 	componentWillUnmount() {
@@ -131,6 +139,7 @@ Subscriber.propTypes = {
 
 
 function rerenderOn(subscribe, doRender) {
+	cancelDrop(store);
 	return () => (
 		<Subscriber
 			subscribe={subscribe}
@@ -144,8 +153,8 @@ storiesOf('Drag and Drop', module).
 	add('Hover before rendering', () => {
 		const action = {
 			type: actions.HOVER,
-			dragged: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
-			target: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
+			dragged: store.getState().getIn([ 'tree', 0, 'children', 0 ]).toJS(),
+			target: store.getState().getIn([ 'tree', 0, 'children', 0 ]).toJS(),
 			position: positions.get('BEFORE'),
 		};
 		store.dispatch(action);
@@ -164,8 +173,8 @@ storiesOf('Drag and Drop', module).
 		add('Hover after rendering', () => {
 			const action = {
 				type: actions.HOVER,
-				dragged: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
-				target: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
+				dragged: store.getState().getIn([ 'tree', 0, 'children', 0 ]).toJS(),
+				target: store.getState().getIn([ 'tree', 0, 'children', 0 ]).toJS(),
 				position: positions.get('AFTER'),
 			};
 			store.dispatch(action);
@@ -184,8 +193,8 @@ storiesOf('Drag and Drop', module).
 			add('Hover In', () => {
 				const action = {
 					type: actions.HOVER,
-					dragged: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
-					target: store.getState().getIn([ 'tree', 0, 'children', 1 ]).toJS(),
+					dragged: store.getState().getIn([ 'tree', 0, 'children', 0 ]).toJS(),
+					target: store.getState().getIn([ 'tree', 0, 'children', 0 ]).toJS(),
 					position: positions.get('INTO'),
 				};
 				store.dispatch(action);
@@ -214,9 +223,11 @@ storiesOf('Interactive Tree', module).
 		add('DND Tree', rerenderOn(store.subscribe, () => (
 			<Tree
 				tree={store.getState().get('tree')}
-				cancelDrop={cancelDrop}
-				drop={drop}
-				hover={hover}
+				cancelDrop={cancelDrop(store)}
+				drop={drop(store)}
+				hover={hover(store)}
+				stopHover={stopHover(store)}
+				drag={drag(store)}
 				renderNode={(nodeData) => (<ExampleNode
 					data={nodeData}
 				/>)}
@@ -225,9 +236,11 @@ storiesOf('Interactive Tree', module).
 		add('Select Node', rerenderOn(store.subscribe, () => (
 			<Tree
 				tree={store.getState().get('tree')}
-				cancelDrop={cancelDrop}
-				drop={drop}
-				hover={hover}
+				cancelDrop={cancelDrop(store)}
+				drop={drop(store)}
+				hover={hover(store)}
+				drag={drag(store)}
+				stopHover={stopHover(store)}
 				renderNode={
 					(nodeData) => <ExampleNodeSelection
 						select={() => {
@@ -245,9 +258,11 @@ storiesOf('Interactive Tree', module).
 		add('Expand/Collapse Node', rerenderOn(store.subscribe, () => (
 			<Tree
 				tree={store.getState().get('tree')}
-				cancelDrop={cancelDrop}
-				drop={drop}
-				hover={hover}
+				cancelDrop={cancelDrop(store)}
+				drop={drop(store)}
+				drag={drag(store)}
+				hover={hover(store)}
+				stopHover={stopHover(store)}
 				renderNode={
 					(nodeData) => <ExampleNodeCollapse
 						click={() => {
@@ -256,6 +271,50 @@ storiesOf('Interactive Tree', module).
 								collapsed: nodeData,
 							};
 							store.dispatch(action);
+						}}
+						data={nodeData}
+					/>
+							}
+			/>
+		))).
+		add('1000 Node', rerenderOn(largeStore.subscribe, () => (
+			<Tree
+				tree={largeStore.getState().get('tree')}
+				cancelDrop={cancelDrop(largeStore)}
+				drop={drop(largeStore)}
+				drag={drag(largeStore)}
+				hover={hover(largeStore)}
+				stopHover={stopHover(largeStore)}
+				renderNode={
+					(nodeData) => <ExampleNodeCollapse
+						click={() => {
+							const action = {
+								type: actions.COLLAPSE,
+								collapsed: nodeData,
+							};
+							largeStore.dispatch(action);
+						}}
+						data={nodeData}
+					/>
+							}
+			/>
+		))).
+		add('3000 Node', rerenderOn(xlStore.subscribe, () => (
+			<Tree
+				tree={xlStore.getState().get('tree')}
+				cancelDrop={cancelDrop(xlStore)}
+				drop={drop(xlStore)}
+				drag={drag(xlStore)}
+				hover={hover(xlStore)}
+				stopHover={stopHover(xlStore)}
+				renderNode={
+					(nodeData) => <ExampleNodeCollapse
+						click={() => {
+							const action = {
+								type: actions.COLLAPSE,
+								collapsed: nodeData,
+							};
+							xlStore.dispatch(action);
 						}}
 						data={nodeData}
 					/>

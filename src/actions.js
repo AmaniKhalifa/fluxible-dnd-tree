@@ -4,7 +4,9 @@ const actions = {
 	SELECT: 'SELECT',
 	CANCEL_DROP: 'CANCEL_DROP',
 	DROP: 'DROP',
+	DRAG: 'DRAG',
 	HOVER: 'HOVER',
+	STOP_HOVER: 'STOP_HOVER',
 };
 
 export default actions;
@@ -13,8 +15,8 @@ export default actions;
 export function createDropAction(dragged, target, position) {
 	return {
 		type: actions.DROP,
-		dragged: dragged.get('node'),
-		target: target.get('node'),
+		dragged,
+		target,
 		position,
 	};
 }
@@ -23,8 +25,8 @@ export function createDropAction(dragged, target, position) {
 export function createHoverAction(dragged, target, position) {
 	return {
 		type: actions.HOVER,
-		dragged: dragged.get('node'),
-		target: target.get('node'),
+		dragged,
+		target,
 		position,
 	};
 }
