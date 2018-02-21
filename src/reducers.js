@@ -15,27 +15,6 @@ export function selectNode(tree, action) {
 }
 
 
-function replaceNode(nodes, newNode) {
-	let changed = false;
-	const newNodes = nodes.map(function(node) {
-		if (node.get('id') === newNode.get('id')) {
-			changed = true;
-			return newNode;
-		}
-		else if (node.has('children')) {
-			const children = replaceNode(node.get('children'), newNode);
-			if (children !== node.get('children')) { changed = true; }
-			return node.set('children', children);
-		}
-		return node;
-	});
-	if (changed) {
-		return newNodes;
-	}
-	return nodes;
-}
-
-
 export function cancelDrop(nodes) {
 	return removeAllEffects(nodes, true);
 }
@@ -83,6 +62,47 @@ export function setHoverEffects(tree, action, canDrop) {
 		newNode = newNode.set('children', removeAllEffects(newNode.get('children')));
 	}
 	return replaceNode(treeCopy, newNode);
+}
+
+
+export function dropNode(tree, action, canDrop) {
+	if (!canDrop(action)) {
+		return tree;
+	}
+	const treeCopy = removeAllEffects(tree);
+	let newAction = action.set(
+		'target',
+		removeAllEffects(List([ action.get('target') ])).first());
+	const dragged = newAction.get('dragged');
+	newAction = newAction.set('dragged', dragged.remove('drag'));
+	return moveNode(treeCopy, newAction);
+}
+
+
+export function dragNode(tree, action) {
+	const newNode = action.get('dragged').set('drag', true);
+	return replaceNode(tree, newNode);
+}
+
+
+function replaceNode(nodes, newNode) {
+	let changed = false;
+	const newNodes = nodes.map(function(node) {
+		if (node.get('id') === newNode.get('id')) {
+			changed = true;
+			return newNode;
+		}
+		else if (node.has('children')) {
+			const children = replaceNode(node.get('children'), newNode);
+			if (children !== node.get('children')) { changed = true; }
+			return node.set('children', children);
+		}
+		return node;
+	});
+	if (changed) {
+		return newNodes;
+	}
+	return nodes;
 }
 
 
@@ -148,28 +168,7 @@ function moveNode(tree, action) {
 		return replaceNode(nodes, parent);
 	}
 
-	let index =
-				nodes.findIndex((obj) => obj.get('id') === target.get('id'));
+	let index = nodes.findIndex((obj) => obj.get('id') === target.get('id'));
 	index = (position === positions.get('BEFORE')) ? index : index + 1;
 	return nodes.insert(index, dragged);
-
-}
-
-
-export function dropNode(tree, action, canDrop) {
-	if (!canDrop(action)) {
-		return tree;
-	}
-	const treeCopy = removeAllEffects(tree);
-	let newAction = action.set('target',
-		removeAllEffects(List([ action.get('target') ])).first());
-	const dragged = newAction.get('dragged');
-	newAction = newAction.set('dragged', dragged.remove('drag'));
-	return moveNode(treeCopy, newAction);
-}
-
-
-export function dragNode(tree, action) {
-	const newNode = action.get('dragged').set('drag', true);
-	return replaceNode(tree, newNode);
 }
