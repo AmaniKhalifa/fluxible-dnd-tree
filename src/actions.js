@@ -32,6 +32,18 @@ export function createHoverAction(dragged, target, position) {
 }
 
 
+export function createStopHoverAction() {
+	return {
+		type: actions.STOP_HOVER,
+	};
+}
+
+
+export function createDragAction(dragged) {
+	return { type: actions.DRAG, dragged };
+}
+
+
 export function createCancelDropAction() {
 	return { type: actions.CANCEL_DROP };
 }

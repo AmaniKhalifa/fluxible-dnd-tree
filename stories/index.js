@@ -78,21 +78,14 @@ function hover(s) {
 
 function stopHover(s) {
 	return () => {
-		const action = {
-			type: actions.STOP_HOVER,
-		};
-		s.dispatch(action);
+		s.dispatch(actionCreators.createStopHoverAction());
 	};
 }
 
 
 function drag(s) {
 	return (dragged) => {
-		const action = {
-			type: actions.DRAG,
-			dragged,
-		};
-		s.dispatch(action);
+		s.dispatch(actionCreators.createDragAction(dragged));
 	};
 
 }

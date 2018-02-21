@@ -1,6 +1,7 @@
 import Tree from './Tree';
 import actions, { createDropAction, createHoverAction, createCancelDropAction,
-	createSelectAction, createCollapseAction } from './actions';
+		createSelectAction, createCollapseAction,
+		createDragAction, createStopHoverAction } from './actions';
 import positions from './positions';
 import { collapseNode, selectNode, cancelDrop,
 	setHoverEffects, dropNode, dragNode, stopHover } from './reducers';
@@ -17,7 +18,9 @@ export const actionCreators = { createDropAction,
 	createHoverAction,
 	createCancelDropAction,
 	createSelectAction,
-	createCollapseAction };
+	createCollapseAction,
+	createDragAction,
+	createStopHoverAction };
 
 export { positions, actions };
 export default Tree;
