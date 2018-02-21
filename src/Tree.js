@@ -4,8 +4,24 @@ import PropTypes from 'prop-types';
 import HTML5Backend from 'react-dnd-html5-backend';
 import Node from './Node';
 
-class Tree extends Component {
+function buildNode(nodes, handlers) {
+	return nodes.map((node) => (
+		<Node
+			key={node.get('id')}
+			cancelDrop={(...args) => handlers.cancelDrop(...args)}
+			drag={(...args) => handlers.drag(...args)}
+			drop={(...args) => handlers.drop(...args)}
+			hover={(...args) => handlers.hover(...args)}
+			stopHover={(...args) => handlers.stopHover(...args)}
+			node={node}
+			nodeRenderer={handlers.renderNode}
+		>
+			{node.has('children') && buildNode(node.get('children'), handlers)}
+		</Node>
+	));
+}
 
+class Tree extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -27,30 +43,27 @@ class Tree extends Component {
 
 
 	render() {
-		const buildNode = (node) => {
-			let children = List();
-			if (node.get('children')) {
-				children = node.get('children').map(
-					(child) => buildNode(child)
-				);
-			}
-			return (<Node
-				key={node.get('id')}
-				isDescendant={this.isDescendant}
-				cancelDrop={(...args) => this.props.cancelDrop(...args)}
-				drag={(...args) => this.props.drag(...args)}
-				drop={(...args) => this.props.drop(...args)}
-				hover={(...args) => this.props.hover(...args)}
-				stopHover={(...args) => this.props.stopHover(...args)}
-				node={node}
-				nodeRenderer={this.props.renderNode}
-			> {node.get('children') && children}
-			</Node>);
-		};
-
-		const nodes = buildNode(this.state.tree.get(0));
+		const {
+			cancelDrop,
+			stopHover,
+			drop,
+			drag,
+			hover,
+			tree,
+			renderNode,
+		} = this.props;
 		return (
-			<div> {nodes} </div>
+			<ul className="no-list">
+				{buildNode(this.state.tree, {
+					cancelDrop,
+					stopHover,
+					drop,
+					drag,
+					hover,
+					tree,
+					renderNode,
+				})}
+			</ul>
 		);
 	}
 }
