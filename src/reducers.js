@@ -32,9 +32,7 @@ function replaceNode(nodes, newNode) {
 	if (changed) {
 		return newNodes;
 	}
-	else {
-		return nodes;
-	}
+	return nodes;
 }
 
 
@@ -67,15 +65,13 @@ export function removeAllEffects(nodes, drag) {
 	if (changed) {
 		return newNodes;
 	}
-	else {
-		return nodes;
-	}
+	return nodes;
+
 }
 
 
 export function setHoverEffects(tree, action, canDrop) {
 	const treeCopy = removeAllEffects(tree);
-	const hasEffects = treeCopy !== tree;
 	if (!canDrop(action)) {
 		return treeCopy;
 	}
@@ -83,7 +79,7 @@ export function setHoverEffects(tree, action, canDrop) {
 	newNode = newNode.
 		set('collapsed', false).
 		set('hover', action.get('position'));
-	if (newNode.has('children') && hasEffects) {
+	if (newNode.has('children')) {
 		newNode = newNode.set('children', removeAllEffects(newNode.get('children')));
 	}
 	return replaceNode(treeCopy, newNode);
