@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { DragDropContext } from 'react-dnd';
 import PropTypes from 'prop-types';
 import HTML5Backend from 'react-dnd-html5-backend';
-import { Map, List } from 'immutable';
 import Node from './Node';
 
 class Tree extends Component {
@@ -10,23 +9,14 @@ class Tree extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			tree: List([
-				Map({ title: 'DummyNode',
-					id: '__1',
-					rootNode: true,
-					children: this.props.tree,
-				}),
-			]),
+			tree: this.props.tree,
 		};
 	}
 
 
 	componentWillReceiveProps(newProps) {
 		this.setState({
-			tree: this.state.tree.set(
-					0,
-					this.state.tree.first().
-					set('children', newProps.tree)),
+			tree: newProps.tree,
 		});
 	}
 
