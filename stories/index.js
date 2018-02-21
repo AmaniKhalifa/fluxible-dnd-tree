@@ -144,13 +144,10 @@ function rerenderOn(subscribe, doRender) {
 
 storiesOf('Drag and Drop', module).
 	add('Hover before rendering', () => {
-		const action = {
-			type: actions.HOVER,
-			dragged: store.getState().getIn([ 'tree', 0, 'children', 0 ]).toJS(),
-			target: store.getState().getIn([ 'tree', 0, 'children', 0 ]).toJS(),
-			position: positions.get('BEFORE'),
-		};
-		store.dispatch(action);
+		const dragged = store.getState().getIn([ 'tree', 0, 'children', 0 ]).toJS();
+		const target = store.getState().getIn([ 'tree', 0, 'children', 0 ]).toJS();
+		const position = positions.get('BEFORE');
+		store.dispatch(actionCreators.createHoverAction(dragged, target, position));
 		return (
 			<Tree
 				tree={store.getState().get('tree')}
@@ -164,13 +161,10 @@ storiesOf('Drag and Drop', module).
 		);
 	}).
 		add('Hover after rendering', () => {
-			const action = {
-				type: actions.HOVER,
-				dragged: store.getState().getIn([ 'tree', 0, 'children', 0 ]).toJS(),
-				target: store.getState().getIn([ 'tree', 0, 'children', 0 ]).toJS(),
-				position: positions.get('AFTER'),
-			};
-			store.dispatch(action);
+			const dragged = store.getState().getIn([ 'tree', 0, 'children', 0 ]).toJS();
+			const target = store.getState().getIn([ 'tree', 0, 'children', 0 ]).toJS();
+			const position = positions.get('AFTER');
+			store.dispatch(actionCreators.createHoverAction(dragged, target, position));
 			return (
 				<Tree
 					tree={store.getState().get('tree')}
@@ -184,13 +178,13 @@ storiesOf('Drag and Drop', module).
 			);
 		}).
 			add('Hover In', () => {
-				const action = {
-					type: actions.HOVER,
-					dragged: store.getState().getIn([ 'tree', 0, 'children', 0 ]).toJS(),
-					target: store.getState().getIn([ 'tree', 0, 'children', 0 ]).toJS(),
-					position: positions.get('INTO'),
-				};
-				store.dispatch(action);
+				const dragged = store.getState().
+					getIn([ 'tree', 0, 'children', 0 ]).toJS();
+				const target = store.getState().
+					getIn([ 'tree', 0, 'children', 0 ]).toJS();
+				const position = positions.get('INTO');
+				store.dispatch(actionCreators.
+						createHoverAction(dragged, target, position));
 				return (
 					<Tree
 						tree={store.getState().get('tree')}
@@ -237,11 +231,7 @@ storiesOf('Interactive Tree', module).
 				renderNode={
 					(nodeData) => <ExampleNodeSelection
 						select={() => {
-							const action = {
-								type: actions.SELECT,
-								selected: nodeData,
-							};
-							store.dispatch(action);
+							store.dispatch(actionCreators.createSelectAction(nodeData));
 						}}
 						data={nodeData}
 					/>
@@ -259,11 +249,7 @@ storiesOf('Interactive Tree', module).
 				renderNode={
 					(nodeData) => <ExampleNodeCollapse
 						click={() => {
-							const action = {
-								type: actions.COLLAPSE,
-								collapsed: nodeData,
-							};
-							store.dispatch(action);
+							store.dispatch(actionCreators.createCollapseAction(nodeData));
 						}}
 						data={nodeData}
 					/>
@@ -281,11 +267,8 @@ storiesOf('Interactive Tree', module).
 				renderNode={
 					(nodeData) => <ExampleNodeCollapse
 						click={() => {
-							const action = {
-								type: actions.COLLAPSE,
-								collapsed: nodeData,
-							};
-							largeStore.dispatch(action);
+							largeStore.dispatch(
+									actionCreators.createCollapseAction(nodeData));
 						}}
 						data={nodeData}
 					/>
@@ -303,11 +286,8 @@ storiesOf('Interactive Tree', module).
 				renderNode={
 					(nodeData) => <ExampleNodeCollapse
 						click={() => {
-							const action = {
-								type: actions.COLLAPSE,
-								collapsed: nodeData,
-							};
-							xlStore.dispatch(action);
+							xlStore.dispatch(
+									actionCreators.createCollapseAction(nodeData));
 						}}
 						data={nodeData}
 					/>
