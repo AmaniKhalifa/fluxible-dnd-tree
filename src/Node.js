@@ -142,59 +142,46 @@ class Node extends Component {
 				nodeRenderer, node } = this.props;
 		const nodeJSX = nodeRenderer(node);
 
-		if (node.get('rootNode')) {
-			return (
-				<ul
-					id={'root_node'}
-					className={'no-list'}
-				>
-					{children}
-				</ul>
-			);
-		}
-
-		return connectDragSource(connectDropTarget(
-			(<li
+		return connectDragSource(connectDropTarget((
+			<li
 				ref={(element) => { this.element = element; }}
-				className={`no-list node${
-					node.get('hover') ? ` ${node.get('hover')} hover` : ''
-				}${node.has('drag') ? ' drag' : ''}
-					${node.has('selected') ? ' selected' : ''}
-					${node.has('className') ? node.get('className') : ''}`}
-				id={`node_${node.get('id')}`}
+				className={`no-list node${calculateNodeClassNames(node)}`}
 			>
 				{nodeJSX}
 				<ul
-					className={`no-list children${
-						node.get('collapsed') ? ' collapsed' : ''}`}
-					id={`children_node_${node.get('id')}`}
+					className="no-list children"
 				>
 					{children}
 				</ul>
-			</li>)
-					,
-				));
-
-
+			</li>
+		)));
 	}
 }
+
+
 Node.propTypes = {
 	connectDragSource: PropTypes.func.isRequired,
 	connectDropTarget: PropTypes.func.isRequired,
 	node: PropTypes.shape({}).isRequired,
-	drag: PropTypes.func.isRequired, //eslint-disable-line
-	drop: PropTypes.func.isRequired, //eslint-disable-line
-	hover: PropTypes.func.isRequired, //eslint-disable-line
-	cancelDrop: PropTypes.func.isRequired, //eslint-disable-line
-	isHovering: PropTypes.bool.isRequired, //eslint-disable-line
-	stopHover: PropTypes.func.isRequired, //eslint-disable-line
+	// 2018-02-21 AmK,JaF: eslint does not check prop usage in componentWillReceiveProps
+	//eslint-disable-next-line react/no-unused-prop-types
+	isHovering: PropTypes.bool.isRequired,
+	//eslint-disable-next-line react/no-unused-prop-types
+	drag: PropTypes.func,
+	//eslint-disable-next-line react/no-unused-prop-types
+	drop: PropTypes.func,
+	//eslint-disable-next-line react/no-unused-prop-types
+	hover: PropTypes.func,
+	//eslint-disable-next-line react/no-unused-prop-types
+	cancelDrop: PropTypes.func,
+	//eslint-disable-next-line react/no-unused-prop-types
+	stopHover: PropTypes.func,
 	children: PropTypes.node,
 	nodeRenderer: PropTypes.func.isRequired,
 };
 
 Node.defaultProps = {
 	children: undefined,
-	isHovering: false,
 	cancelDrop() {},
 	stopHover() {},
 	hover() {},
