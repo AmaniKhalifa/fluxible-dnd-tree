@@ -3,17 +3,11 @@ import { storiesOf } from '@kadira/storybook';
 import { createStore } from 'redux';
 import { fromJS } from 'immutable';
 import PropTypes from 'prop-types';
-import { ExampleNode, ExampleNodeSelection,
-	ExampleNodeCollapse } from './examples';
+import { ExampleNode, ExampleNodeSelection, ExampleNodeCollapse } from './examples';
 import Tree, { positions, reducers, actions, actionCreators } from '../src/index';
 import medium from './data/data_M';
 import large from './data/data_L';
 import nestedXL from './data/data_nested_XL';
-// import xlarge from './data/data_XL';
-// import nested_xxl from './data/data_nested_XXL';
-// import small from './data/data_S';
-
-
 import './css/styles.css';
 import './css/font-awesome.min.css';
 
@@ -103,7 +97,6 @@ function canDrop(action) {
 class Subscriber extends Component {
 	constructor(props) {
 		super(props);
-
 		this.unsubscribe = props.subscribe(() => {
 			if (this.rf) { return; }
 			this.rf = window.requestAnimationFrame(() => {
@@ -112,15 +105,15 @@ class Subscriber extends Component {
 			});
 		});
 	}
+
+
 	componentWillUnmount() {
 		this.unsubscribe();
 	}
 
-	render() {
 
-		return (<div>
-			{this.props.doRender()}
-		</div>);
+	render() {
+		return (<div>{this.props.doRender()}</div>);
 	}
 }
 
@@ -152,59 +145,57 @@ storiesOf('Drag and Drop', module).
 			<Tree
 				tree={store.getState().get('tree')}
 				renderNode={
-				(nodeData) => <ExampleNode
-					data={nodeData}
-				/>
-			}
-			/>
-
-		);
-	}).
-		add('Hover after rendering', () => {
-			const dragged = store.getState().getIn([ 'tree', 0, 'children', 0 ]).toJS();
-			const target = store.getState().getIn([ 'tree', 0, 'children', 0 ]).toJS();
-			const position = positions.get('AFTER');
-			store.dispatch(actionCreators.createHoverAction(dragged, target, position));
-			return (
-				<Tree
-					tree={store.getState().get('tree')}
-					renderNode={
 					(nodeData) => <ExampleNode
 						data={nodeData}
 					/>
 				}
-				/>
+			/>
 
-			);
-		}).
-			add('Hover In', () => {
-				const dragged = store.getState().
-					getIn([ 'tree', 0, 'children', 0 ]).toJS();
-				const target = store.getState().
-					getIn([ 'tree', 0, 'children', 0 ]).toJS();
-				const position = positions.get('INTO');
-				store.dispatch(actionCreators.
-						createHoverAction(dragged, target, position));
-				return (
-					<Tree
-						tree={store.getState().get('tree')}
-						renderNode={
-						(nodeData) => <ExampleNode
-							data={nodeData}
-						/>
-						}
+		);
+	}).
+	add('Hover after rendering', () => {
+		const dragged = store.getState().getIn([ 'tree', 0, 'children', 0 ]).toJS();
+		const target = store.getState().getIn([ 'tree', 0, 'children', 0 ]).toJS();
+		const position = positions.get('AFTER');
+		store.dispatch(actionCreators.createHoverAction(dragged, target, position));
+		return (
+			<Tree
+				tree={store.getState().get('tree')}
+				renderNode={
+					(nodeData) => <ExampleNode
+						data={nodeData}
 					/>
+				}
+			/>
 
-				);
-			});
+		);
+	}).
+	add('Hover In', () => {
+		const dragged = store.getState().
+			getIn([ 'tree', 0, 'children', 0 ]).toJS();
+		const target = store.getState().
+			getIn([ 'tree', 0, 'children', 0 ]).toJS();
+		const position = positions.get('INTO');
+		store.dispatch(actionCreators.
+				createHoverAction(dragged, target, position));
+		return (
+			<Tree
+				tree={store.getState().get('tree')}
+				renderNode={
+					(nodeData) => <ExampleNode
+						data={nodeData}
+					/>
+				}
+			/>
+		);
+	});
+
 
 storiesOf('Interactive Tree', module).
 		add('Tree Rendering', rerenderOn(store.subscribe, () => (
 			<Tree
 				tree={store.getState().get('tree')}
-				renderNode={(nodeData) => (<ExampleNode
-					data={nodeData}
-				/>)}
+				renderNode={(nodeData) => (<ExampleNode data={nodeData} />)}
 			/>
 		))).
 		add('DND Tree', rerenderOn(store.subscribe, () => (
@@ -215,9 +206,7 @@ storiesOf('Interactive Tree', module).
 				hover={hover(store)}
 				stopHover={stopHover(store)}
 				drag={drag(store)}
-				renderNode={(nodeData) => (<ExampleNode
-					data={nodeData}
-				/>)}
+				renderNode={(nodeData) => (<ExampleNode data={nodeData} />)}
 			/>
 		))).
 		add('Select Node', rerenderOn(store.subscribe, () => (
@@ -235,7 +224,7 @@ storiesOf('Interactive Tree', module).
 						}}
 						data={nodeData}
 					/>
-							}
+				}
 			/>
 		))).
 		add('Expand/Collapse Node', rerenderOn(store.subscribe, () => (
@@ -253,7 +242,7 @@ storiesOf('Interactive Tree', module).
 						}}
 						data={nodeData}
 					/>
-							}
+				}
 			/>
 		))).
 		add('1000 Node', rerenderOn(largeStore.subscribe, () => (
@@ -272,7 +261,7 @@ storiesOf('Interactive Tree', module).
 						}}
 						data={nodeData}
 					/>
-							}
+				}
 			/>
 		))).
 		add('3000 Node', rerenderOn(xlStore.subscribe, () => (
@@ -291,6 +280,6 @@ storiesOf('Interactive Tree', module).
 						}}
 						data={nodeData}
 					/>
-							}
+				}
 			/>
 		)));
