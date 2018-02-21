@@ -35,7 +35,7 @@ export function removeAllEffects(nodes, drag) {
 		}
 		if (newNode !== node) { changed = true; }
 		if (newNode.has('children')) {
-			const children = removeAllEffects(newNode.get('children'));
+			const children = removeAllEffects(newNode.get('children'), drag);
 			if (children !== newNode.get('children')) { changed = true; }
 			return newNode.set('children', children);
 		}

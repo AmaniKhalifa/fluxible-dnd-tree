@@ -71,16 +71,19 @@ const nodeSource = {
 
 
 	endDrag(dragged, monitor) {
-		const target = monitor.getDropResult();
+		const dropResult = monitor.getDropResult();
 		const draggedNode = fromJS(dragged.node);
-		const hasTarget = target && target.target && target.target.node;
+		const hasTarget = dropResult && dropResult.target && dropResult.target.node;
 		const targetIsDragged = hasTarget &&
-			target.target.node.id === draggedNode.get('id');
+			dropResult.target.node.get('id') === draggedNode.get('id');
 		const targetUnderSource = hasTarget &&
-			isDescendant(draggedNode, target.target.node.id);
+			isDescendant(draggedNode, dropResult.target.node.get('id'));
 
 		if (hasTarget && !targetIsDragged && !targetUnderSource) {
-			dragged.drop(draggedNode, fromJS(target.target.node), target.position);
+			dragged.drop(
+				draggedNode,
+				fromJS(dropResult.target.node),
+				dropResult.position);
 		}
 		else {
 			dragged.cancelDrop();
