@@ -16,17 +16,17 @@ export function selectNode(tree, action) {
 
 
 export function cancelDrop(nodes) {
-	return removeAllEffects(nodes, true);
+	return removeEffects(nodes, [ 'hover', 'drag' ]);
 }
 
 
 export function stopHover(nodes) {
-	return removeAllEffects(nodes);
+	return removeEffects(nodes, [ 'hover' ]);
 }
 
 
 export function setHoverEffects(tree, action, canDrop) {
-	const treeCopy = removeAllEffects(tree);
+	const treeCopy = removeEffects(tree, [ 'hover' ]);
 	if (!canDrop(action)) {
 		return treeCopy;
 	}
@@ -35,7 +35,8 @@ export function setHoverEffects(tree, action, canDrop) {
 		set('collapsed', false).
 		set('hover', action.get('position'));
 	if (newNode.has('children')) {
-		newNode = newNode.set('children', removeAllEffects(newNode.get('children')));
+		newNode = newNode.set('children',
+			removeEffects(newNode.get('children'), [ 'hover' ]));
 	}
 	return replaceNode(treeCopy, newNode);
 }
@@ -43,12 +44,12 @@ export function setHoverEffects(tree, action, canDrop) {
 
 export function dropNode(tree, action, canDrop) {
 	if (!canDrop(action)) {
-		return removeAllEffects(tree, true);
+		return removeEffects(tree, [ 'hover', 'drag' ]);
 	}
-	const treeCopy = removeAllEffects(tree);
+	const treeCopy = removeEffects(tree, [ 'hover' ]);
 	let newAction = action.set(
 		'target',
-		removeAllEffects(List([ action.get('target') ])).first());
+		removeEffects(List([ action.get('target') ]), [ 'hover' ]).first());
 	const dragged = newAction.get('dragged');
 	newAction = newAction.set('dragged', dragged.remove('drag'));
 	return moveNode(treeCopy, newAction);
@@ -150,17 +151,14 @@ function moveNode(tree, action) {
 }
 
 
-function removeAllEffects(nodes, drag) {
+function removeEffects(nodes, effects) {
 	let changed = false;
 
 	const newNodes = nodes.map(function(node) {
-		let newNode = node.remove('hover');
-		if (drag) {
-			newNode = newNode.remove('drag');
-		}
+		const newNode = removeAll(node, effects);
 		if (newNode !== node) { changed = true; }
 		if (newNode.has('children')) {
-			const children = removeAllEffects(newNode.get('children'), drag);
+			const children = removeEffects(newNode.get('children'), effects);
 			if (children !== newNode.get('children')) { changed = true; }
 			return newNode.set('children', children);
 		}
@@ -170,4 +168,11 @@ function removeAllEffects(nodes, drag) {
 		return newNodes;
 	}
 	return nodes;
+}
+
+
+function removeAll(node, keys) {
+	return keys.reduce(
+		(newNode, key) => newNode.remove(key),
+		node);
 }
