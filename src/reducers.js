@@ -29,8 +29,10 @@ export function removeAllEffects(nodes, drag) {
 	let changed = false;
 
 	const newNodes = nodes.map(function(node) {
-		const newNode = drag ? node.remove('hover').remove('drag') :
-			node.remove('hover');
+		let newNode = node.remove('hover');
+		if (drag) {
+			newNode = newNode.remove('drag');
+		}
 		if (newNode !== node) { changed = true; }
 		if (newNode.has('children')) {
 			const children = removeAllEffects(newNode.get('children'), drag);
