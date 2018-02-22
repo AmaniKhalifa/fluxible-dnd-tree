@@ -1,3 +1,9 @@
+.node {
+	padding: 8px;
+	margin: 0px;
+	cursor: move;
+}
+
 .node.hover.into {
 	background-color: #e4dedd
 }
@@ -14,7 +20,7 @@
 	opacity: 0.4;
 }
 
-.children.collapsed {
+.collapsed .children {
 	display: none;
 }
 
