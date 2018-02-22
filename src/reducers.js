@@ -25,30 +25,6 @@ export function stopHover(nodes) {
 }
 
 
-export function removeAllEffects(nodes, drag) {
-	let changed = false;
-
-	const newNodes = nodes.map(function(node) {
-		let newNode = node.remove('hover');
-		if (drag) {
-			newNode = newNode.remove('drag');
-		}
-		if (newNode !== node) { changed = true; }
-		if (newNode.has('children')) {
-			const children = removeAllEffects(newNode.get('children'), drag);
-			if (children !== newNode.get('children')) { changed = true; }
-			return newNode.set('children', children);
-		}
-		return newNode;
-	});
-	if (changed) {
-		return newNodes;
-	}
-	return nodes;
-
-}
-
-
 export function setHoverEffects(tree, action, canDrop) {
 	const treeCopy = removeAllEffects(tree);
 	if (!canDrop(action)) {
@@ -67,7 +43,7 @@ export function setHoverEffects(tree, action, canDrop) {
 
 export function dropNode(tree, action, canDrop) {
 	if (!canDrop(action)) {
-		return tree;
+		return removeAllEffects(tree, true);
 	}
 	const treeCopy = removeAllEffects(tree);
 	let newAction = action.set(
@@ -171,4 +147,27 @@ function moveNode(tree, action) {
 	let index = nodes.findIndex((obj) => obj.get('id') === target.get('id'));
 	index = (position === positions.get('BEFORE')) ? index : index + 1;
 	return nodes.insert(index, dragged);
+}
+
+
+function removeAllEffects(nodes, drag) {
+	let changed = false;
+
+	const newNodes = nodes.map(function(node) {
+		let newNode = node.remove('hover');
+		if (drag) {
+			newNode = newNode.remove('drag');
+		}
+		if (newNode !== node) { changed = true; }
+		if (newNode.has('children')) {
+			const children = removeAllEffects(newNode.get('children'), drag);
+			if (children !== newNode.get('children')) { changed = true; }
+			return newNode.set('children', children);
+		}
+		return newNode;
+	});
+	if (changed) {
+		return newNodes;
+	}
+	return nodes;
 }
