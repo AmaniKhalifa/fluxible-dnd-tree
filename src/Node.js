@@ -32,9 +32,7 @@ const getTopPixels = (clientOffset, hoverBoundingRect) =>
 const getHoverPos = (component, monitor) => {
 	const rawComponent = component.getDecoratedComponentInstance();
 	const hoverBoundingRect = rawComponent.element.getBoundingClientRect();
-
-	const nodeChildren = document.getElementById(
-		`children_node_${component.props.node.get('id')}`);
+	const nodeChildren = rawComponent.element.querySelector('ul');
 	const nodeChildrenHeight = (nodeChildren) ? nodeChildren.offsetHeight : 0;
 
 	const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top -
