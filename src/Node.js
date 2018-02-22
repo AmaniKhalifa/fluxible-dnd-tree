@@ -80,7 +80,7 @@ const nodeSource = {
 		if (hasTarget && !targetIsDragged && !targetUnderSource) {
 			dragged.drop(
 				draggedNode,
-				fromJS(dropResult.target.node),
+				dropResult.target.node,
 				dropResult.position);
 		}
 		else {
