@@ -1,7 +1,8 @@
 import { configure } from '@kadira/storybook';
 
 function loadStories() {
-	require('../stories'); // eslint-disable-line
+	// eslint-disable-next-line global-require
+	require('../stories');
 }
 
 configure(loadStories, module);

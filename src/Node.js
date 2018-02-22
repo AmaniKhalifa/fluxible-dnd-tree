@@ -32,9 +32,7 @@ const getTopPixels = (clientOffset, hoverBoundingRect) =>
 const getHoverPos = (component, monitor) => {
 	const rawComponent = component.getDecoratedComponentInstance();
 	const hoverBoundingRect = rawComponent.element.getBoundingClientRect();
-
-	const nodeChildren = document.getElementById(
-		`children_node_${component.props.node.get('id')}`);
+	const nodeChildren = rawComponent.element.querySelector('ul');
 	const nodeChildrenHeight = (nodeChildren) ? nodeChildren.offsetHeight : 0;
 
 	const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top -
@@ -45,17 +43,17 @@ const getHoverPos = (component, monitor) => {
 
 	const clientOffset = getMousePosition(monitor);
 	const hoverClientY = getTopPixels(clientOffset, hoverBoundingRect);
-	let hoverPosition = null;
 
 	const isDraggingDown = hoverClientY <= (hoverMiddleY - hoverTolerance);
 	const isDraggingUp = hoverClientY > (hoverMiddleY + hoverTolerance);
+
+	let hoverPosition = null;
 	if (isDraggingDown) {
 		hoverPosition = positions.get('BEFORE');
 	}
 	else if (isDraggingUp) {
 		hoverPosition = positions.get('AFTER');
 	}
-
 	else {
 		hoverPosition = positions.get('INTO');
 	}
@@ -65,36 +63,40 @@ const getHoverPos = (component, monitor) => {
 
 const nodeSource = {
 	beginDrag(dragged) {
+		dragged.drag(dragged.node);
 		return dragged;
 	},
-	endDrag(draggedJS, monitor) {
-		const target = fromJS(monitor.getDropResult());
-		const dragged = fromJS(draggedJS);
-		const hasTarget = target && target.has('target') &&
-			target.hasIn([ 'target', 'node' ]);
+
+
+	endDrag(dragged, monitor) {
+		const dropResult = monitor.getDropResult();
+		const draggedNode = fromJS(dragged.node);
+		const hasTarget = dropResult && dropResult.target && dropResult.target.node;
 		const targetIsDragged = hasTarget &&
-			target.getIn([ 'target', 'node', 'id' ]) === dragged.getIn([ 'node', 'id' ]);
+			dropResult.target.node.get('id') === draggedNode.get('id');
 		const targetUnderSource = hasTarget &&
-							isDescendant(dragged.get('node'),
-							target.getIn([ 'target', 'node', 'id' ]));
+			isDescendant(draggedNode, dropResult.target.node.get('id'));
+
 		if (hasTarget && !targetIsDragged && !targetUnderSource) {
-			dragged.get('drop')(dragged, target.get('target'),
-				target.get('position'));
+			dragged.drop(
+				draggedNode,
+				dropResult.target.node,
+				dropResult.position);
 		}
 		else {
-			dragged.get('cancelDrop')();
+			dragged.cancelDrop();
 		}
 	},
 };
 
 const nodeTarget = {
-	hover(hoveredJS, monitor, component) {
-		const hovered = fromJS(hoveredJS);
+	hover(hovered, monitor, component) {
+		const hoveredNode = fromJS(hovered.node);
 		if (monitor.isOver({ shallow: true })) {
 			const hoverPosition = getHoverPos(component, monitor);
-			const dragged = fromJS(monitor.getItem());
-			if (hovered.get('hover') === hoverPosition) { return; }
-			hovered.get('hover')(dragged, hovered, hoverPosition);
+			const dragged = fromJS(monitor.getItem().node);
+			if (hoveredNode.get('hover') === hoverPosition) { return; }
+			hovered.hover(dragged, hoveredNode, hoverPosition);
 		}
 	},
 	drop(target, monitor, component) {
@@ -107,78 +109,85 @@ const nodeTarget = {
 	},
 };
 
+
+function calculateNodeClassNames(node) {
+	const hoverClass = node.has('hover') ? ` ${node.get('hover')} hover` : '';
+	const dragClass = node.has('drag') ? ' drag' : '';
+	const selectedClass = node.has('selected') ? ' selected' : '';
+	const customClass = node.has('className') ? node.get('className') : '';
+	const collapsedClass = node.get('collapsed') ? ' collapsed' : '';
+
+	return hoverClass +
+		dragClass +
+		selectedClass +
+		customClass +
+		collapsedClass;
+}
+
+
 class Node extends Component {
 
 	componentWillReceiveProps(nextProps) {
 		const node = nextProps.node;
 		if (!nextProps.isHovering && node.has('hover')) {
-			nextProps.cancelDrop();
+			nextProps.stopHover();
 		}
 	}
 
+	shouldComponentUpdate(newProps) {
+		return newProps.node !== this.props.node;
+	}
 
 	render() {
-		const { connectDragSource, connectDropTarget, isDragging, children,
+		const { connectDragSource, connectDropTarget, children,
 				nodeRenderer, node } = this.props;
-
 		const nodeJSX = nodeRenderer(node);
 
-		if (node.get('rootNode')) {
-			return (
-				<ul
-					id={'root_node'}
-					className={'no-list'}
-				>
-					{children}
-				</ul>
-			);
-		}
-
-		return connectDragSource(connectDropTarget(
-			(<li
+		return connectDragSource(connectDropTarget((
+			<li
 				ref={(element) => { this.element = element; }}
-				className={`no-list node${
-					node.get('hover') ? ` ${node.get('hover')} hover` : ''
-					}${isDragging ? ' drag' : ''}
-					${node.get('selected') ? ' selected' : ''}
-					${node.has('className') ? node.get('className') : ''}`}
-				id={`node_${node.get('id')}`}
+				className={`no-list node${calculateNodeClassNames(node)}`}
 			>
 				{nodeJSX}
 				<ul
-					className={`no-list children${
-						node.get('collapsed') ? ' collapsed' : ''}`}
-					id={`children_node_${node.get('id')}`}
+					className="no-list children"
 				>
 					{children}
 				</ul>
-			</li>)
-					,
-				));
-
-
+			</li>
+		)));
 	}
 }
+
+
 Node.propTypes = {
 	connectDragSource: PropTypes.func.isRequired,
 	connectDropTarget: PropTypes.func.isRequired,
-	isDragging: PropTypes.bool.isRequired,
 	node: PropTypes.shape({}).isRequired,
-	drop: PropTypes.func.isRequired, //eslint-disable-line
-	hover: PropTypes.func.isRequired, //eslint-disable-line
-	cancelDrop: PropTypes.func.isRequired, //eslint-disable-line
-	isHovering: PropTypes.bool.isRequired, //eslint-disable-line
+	// 2018-02-21 AmK,JaF: eslint does not check prop usage in componentWillReceiveProps
+	//eslint-disable-next-line react/no-unused-prop-types
+	isHovering: PropTypes.bool.isRequired,
+	//eslint-disable-next-line react/no-unused-prop-types
+	drag: PropTypes.func,
+	//eslint-disable-next-line react/no-unused-prop-types
+	drop: PropTypes.func,
+	//eslint-disable-next-line react/no-unused-prop-types
+	hover: PropTypes.func,
+	//eslint-disable-next-line react/no-unused-prop-types
+	cancelDrop: PropTypes.func,
+	//eslint-disable-next-line react/no-unused-prop-types
+	stopHover: PropTypes.func,
 	children: PropTypes.node,
 	nodeRenderer: PropTypes.func.isRequired,
 };
 
 Node.defaultProps = {
 	children: undefined,
-	isHovering: false,
 	cancelDrop() {},
+	stopHover() {},
 	hover() {},
 	drop() {},
-
+	drag() {},
 };
 
 export default DropTarget(ItemTypes.NODE, nodeTarget, (connect, monitor) => ({

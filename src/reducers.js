@@ -15,33 +15,18 @@ export function selectNode(tree, action) {
 }
 
 
-function replaceNode(nodes, newNode) {
-	return nodes.map(function(node) {
-		if (node.get('id') === newNode.get('id')) {
-			return newNode;
-		}
-		else if (node.has('children')) {
-			return node.set('children', replaceNode(node.get('children'), newNode));
-		}
-		return node;
-	});
+export function cancelDrop(nodes) {
+	return removeEffects(nodes, [ 'hover', 'drag' ]);
 }
 
 
-export function removeAllEffects(nodes) {
-	return nodes.map(function(node) {
-		const newNode = node.remove('hover');
-		if (newNode.has('children')) {
-			const children = removeAllEffects(newNode.get('children'));
-			return newNode.set('children', children);
-		}
-		return newNode;
-	});
+export function stopHover(nodes) {
+	return removeEffects(nodes, [ 'hover' ]);
 }
 
 
 export function setHoverEffects(tree, action, canDrop) {
-	const treeCopy = removeAllEffects(tree);
+	const treeCopy = removeEffects(tree, [ 'hover' ]);
 	if (!canDrop(action)) {
 		return treeCopy;
 	}
@@ -50,9 +35,51 @@ export function setHoverEffects(tree, action, canDrop) {
 		set('collapsed', false).
 		set('hover', action.get('position'));
 	if (newNode.has('children')) {
-		newNode = newNode.set('children', removeAllEffects(newNode.get('children')));
+		newNode = newNode.set('children',
+			removeEffects(newNode.get('children'), [ 'hover' ]));
 	}
 	return replaceNode(treeCopy, newNode);
+}
+
+
+export function dropNode(tree, action, canDrop) {
+	if (!canDrop(action)) {
+		return removeEffects(tree, [ 'hover', 'drag' ]);
+	}
+	const treeCopy = removeEffects(tree, [ 'hover' ]);
+	let newAction = action.set(
+		'target',
+		removeEffects(List([ action.get('target') ]), [ 'hover' ]).first());
+	const dragged = newAction.get('dragged');
+	newAction = newAction.set('dragged', dragged.remove('drag'));
+	return moveNode(treeCopy, newAction);
+}
+
+
+export function dragNode(tree, action) {
+	const newNode = action.get('dragged').set('drag', true);
+	return replaceNode(tree, newNode);
+}
+
+
+function replaceNode(nodes, newNode) {
+	let changed = false;
+	const newNodes = nodes.map(function(node) {
+		if (node.get('id') === newNode.get('id')) {
+			changed = true;
+			return newNode;
+		}
+		else if (node.has('children')) {
+			const children = replaceNode(node.get('children'), newNode);
+			if (children !== node.get('children')) { changed = true; }
+			return node.set('children', children);
+		}
+		return node;
+	});
+	if (changed) {
+		return newNodes;
+	}
+	return nodes;
 }
 
 
@@ -118,22 +145,34 @@ function moveNode(tree, action) {
 		return replaceNode(nodes, parent);
 	}
 
-	let index =
-				nodes.findIndex((obj) => obj.get('id') === target.get('id'));
+	let index = nodes.findIndex((obj) => obj.get('id') === target.get('id'));
 	index = (position === positions.get('BEFORE')) ? index : index + 1;
 	return nodes.insert(index, dragged);
-
-
 }
 
 
-export function dropNode(tree, action, canDrop) {
-	if (!canDrop(action)) {
-		return tree;
-	}
-	const treeCopy = removeAllEffects(tree);
-	const newAction = action.set('target',
-		removeAllEffects(List([ action.get('target') ])).first());
+function removeEffects(nodes, effects) {
+	let changed = false;
 
-	return moveNode(treeCopy, newAction);
+	const newNodes = nodes.map(function(node) {
+		const newNode = removeAll(node, effects);
+		if (newNode !== node) { changed = true; }
+		if (newNode.has('children')) {
+			const children = removeEffects(newNode.get('children'), effects);
+			if (children !== newNode.get('children')) { changed = true; }
+			return newNode.set('children', children);
+		}
+		return newNode;
+	});
+	if (changed) {
+		return newNodes;
+	}
+	return nodes;
+}
+
+
+function removeAll(node, keys) {
+	return keys.reduce(
+		(newNode, key) => newNode.remove(key),
+		node);
 }

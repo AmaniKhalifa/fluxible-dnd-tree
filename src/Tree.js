@@ -2,74 +2,87 @@ import React, { Component } from 'react';
 import { DragDropContext } from 'react-dnd';
 import PropTypes from 'prop-types';
 import HTML5Backend from 'react-dnd-html5-backend';
-import { Map, List } from 'immutable';
 import Node from './Node';
 
-class Tree extends Component {
+function buildNode(nodes, handlers) {
+	return nodes.map((node) => (
+		<Node
+			key={node.get('id')}
+			cancelDrop={(...args) => handlers.cancelDrop(...args)}
+			drag={(...args) => handlers.drag(...args)}
+			drop={(...args) => handlers.drop(...args)}
+			hover={(...args) => handlers.hover(...args)}
+			stopHover={(...args) => handlers.stopHover(...args)}
+			node={node}
+			nodeRenderer={handlers.renderNode}
+		>
+			{node.has('children') && buildNode(node.get('children'), handlers)}
+		</Node>
+	));
+}
 
+class Tree extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			tree: List([
-				Map({ title: 'DummyNode',
-					id: '__1',
-					rootNode: true,
-					children: this.props.tree,
-				}),
-			]),
+			tree: this.props.tree,
 		};
 	}
+
+
 	componentWillReceiveProps(newProps) {
-		const tree = List([
-			Map({ title: 'DummyNode',
-				id: '__1',
-				rootNode: true,
-				children: newProps.tree,
-			}),
-		]);
 		this.setState({
-			tree,
+			tree: newProps.tree,
 		});
 	}
 
 
-	render() {
-		const buildNode = (node) => {
-			let children = List();
-			if (node.get('children')) {
-				children = node.get('children').map(
-					(child) => buildNode(child)
-				);
-			}
-			return (<Node
-				key={node.get('id')}
-				isDescendant={this.isDescendant}
-				cancelDrop={(...args) => this.props.cancelDrop(...args)}
-				drop={(...args) => this.props.drop(...args)}
-				hover={(...args) => this.props.hover(...args)}
-				node={node}
-				nodeRenderer={this.props.renderNode}
-			> {node.get('children') && children }
-			</Node>);
-		};
+	shouldComponentUpdate(newProps) {
+		return newProps.tree !== this.props.tree;
+	}
 
-		const nodes = buildNode(this.state.tree.get(0));
+
+	render() {
+		const {
+			cancelDrop,
+			stopHover,
+			drop,
+			drag,
+			hover,
+			tree,
+			renderNode,
+		} = this.props;
 		return (
-			<div> {nodes} </div>
+			<ul className="no-list">
+				{buildNode(this.state.tree, {
+					cancelDrop,
+					stopHover,
+					drop,
+					drag,
+					hover,
+					tree,
+					renderNode,
+				})}
+			</ul>
 		);
 	}
 }
+
 Tree.defaultProps = {
 	cancelDrop() {},
 	drop() {},
 	hover() {},
 	renderNode() {},
+	stopHover() {},
+	drag() {},
 	tree: [],
 };
 
 Tree.propTypes = {
 	cancelDrop: PropTypes.func,
+	stopHover: PropTypes.func,
 	drop: PropTypes.func,
+	drag: PropTypes.func,
 	hover: PropTypes.func,
 	tree: PropTypes.shape([]).isRequired,
 	renderNode: PropTypes.func.isRequired,
