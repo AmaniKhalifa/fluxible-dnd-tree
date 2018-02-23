@@ -245,7 +245,7 @@ storiesOf('Interactive Tree', module).
 				}
 			/>
 		))).
-		add('1000 Node', rerenderOn(largeStore.subscribe, () => (
+		add('1000 Nodes', rerenderOn(largeStore.subscribe, () => (
 			<Tree
 				tree={largeStore.getState().get('tree')}
 				cancelDrop={cancelDrop(largeStore)}
@@ -264,7 +264,7 @@ storiesOf('Interactive Tree', module).
 				}
 			/>
 		))).
-		add('3000 Node', rerenderOn(xlStore.subscribe, () => (
+		add('3000 Nodes', rerenderOn(xlStore.subscribe, () => (
 			<Tree
 				tree={xlStore.getState().get('tree')}
 				cancelDrop={cancelDrop(xlStore)}
