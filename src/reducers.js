@@ -14,6 +14,25 @@ export function selectNode(tree, action) {
 	return replaceNode(tree, newNode);
 }
 
+export function removeEffects(nodes, effects) {
+	let changed = false;
+
+	const newNodes = nodes.map(function(node) {
+		const newNode = removeAll(node, effects);
+		if (newNode !== node) { changed = true; }
+		if (newNode.has('children')) {
+			const children = removeEffects(newNode.get('children'), effects);
+			if (children !== newNode.get('children')) { changed = true; }
+			return newNode.set('children', children);
+		}
+		return newNode;
+	});
+	if (changed) {
+		return newNodes;
+	}
+	return nodes;
+}
+
 
 export function cancelDrop(nodes) {
 	return removeEffects(nodes, [ 'hover', 'drag' ]);
@@ -25,11 +44,8 @@ export function stopHover(nodes) {
 }
 
 
-export function setHoverEffects(tree, action, canDrop) {
+export function setHoverEffects(tree, action) {
 	const treeCopy = removeEffects(tree, [ 'hover' ]);
-	if (!canDrop(action)) {
-		return treeCopy;
-	}
 	let newNode = action.get('target');
 	newNode = newNode.
 		set('collapsed', false).
@@ -42,10 +58,7 @@ export function setHoverEffects(tree, action, canDrop) {
 }
 
 
-export function dropNode(tree, action, canDrop) {
-	if (!canDrop(action)) {
-		return removeEffects(tree, [ 'hover', 'drag' ]);
-	}
+export function dropNode(tree, action) {
 	const treeCopy = removeEffects(tree, [ 'hover' ]);
 	let newAction = action.set(
 		'target',
@@ -148,26 +161,6 @@ function moveNode(tree, action) {
 	let index = nodes.findIndex((obj) => obj.get('id') === target.get('id'));
 	index = (position === positions.get('BEFORE')) ? index : index + 1;
 	return nodes.insert(index, dragged);
-}
-
-
-function removeEffects(nodes, effects) {
-	let changed = false;
-
-	const newNodes = nodes.map(function(node) {
-		const newNode = removeAll(node, effects);
-		if (newNode !== node) { changed = true; }
-		if (newNode.has('children')) {
-			const children = removeEffects(newNode.get('children'), effects);
-			if (children !== newNode.get('children')) { changed = true; }
-			return newNode.set('children', children);
-		}
-		return newNode;
-	});
-	if (changed) {
-		return newNodes;
-	}
-	return nodes;
 }
 
 

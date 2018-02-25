@@ -4,7 +4,7 @@ import actions, { createDropAction, createHoverAction, createCancelDropAction,
 		createDragAction, createStopHoverAction } from './actions';
 import positions from './positions';
 import { collapseNode, selectNode, cancelDrop,
-	setHoverEffects, dropNode, dragNode, stopHover } from './reducers';
+	setHoverEffects, dropNode, dragNode, stopHover, removeEffects } from './reducers';
 
 export const reducers = { collapseNode,
 	selectNode,
@@ -12,7 +12,8 @@ export const reducers = { collapseNode,
 	setHoverEffects,
 	dropNode,
 	dragNode,
-	stopHover };
+	stopHover,
+	removeEffects };
 
 export const actionCreators = { createDropAction,
 	createHoverAction,
