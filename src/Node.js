@@ -62,6 +62,11 @@ const getHoverPos = (component, monitor) => {
 };
 
 const nodeSource = {
+	canDrag(dragged) {
+		return dragged.draggable;
+	},
+
+
 	beginDrag(dragged) {
 		dragged.drag(dragged.node);
 		return dragged;
@@ -181,12 +186,15 @@ Node.propTypes = {
 	cancelDrop: PropTypes.func,
 	//eslint-disable-next-line react/no-unused-prop-types
 	stopHover: PropTypes.func,
+	//eslint-disable-next-line react/no-unused-prop-types
+	draggable: PropTypes.bool,
 	children: PropTypes.node,
 	nodeRenderer: PropTypes.func.isRequired,
 };
 
 Node.defaultProps = {
 	children: undefined,
+	draggable: true,
 	cancelDrop() {},
 	stopHover() {},
 	hover() {},

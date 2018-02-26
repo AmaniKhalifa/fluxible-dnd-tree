@@ -238,6 +238,7 @@ storiesOf('Drag and Drop', module).
 storiesOf('Interactive Tree', module).
 		add('Tree Rendering', rerenderOn(store.subscribe, () => (
 			<Tree
+				draggable={false}
 				tree={store.getState().get('tree')}
 				renderNode={(nodeData) => (<ExampleNode data={nodeData} />)}
 			/>
