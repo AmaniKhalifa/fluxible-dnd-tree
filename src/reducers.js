@@ -47,9 +47,10 @@ export function stopHover(nodes) {
 export function setHoverEffects(tree, action) {
 	const treeCopy = removeEffects(tree, [ 'hover' ]);
 	let newNode = action.get('target');
-	newNode = newNode.
-		set('collapsed', false).
-		set('hover', action.get('position'));
+	newNode = newNode.set('hover', action.get('position'));
+	if (action.get('position') === positions.get('INTO')) {
+		newNode = newNode.set('collapsed', false);
+	}
 	if (newNode.has('children')) {
 		newNode = newNode.set('children',
 			removeEffects(newNode.get('children'), [ 'hover' ]));
