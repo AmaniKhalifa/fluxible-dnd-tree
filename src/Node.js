@@ -62,6 +62,11 @@ const getHoverPos = (component, monitor) => {
 };
 
 const nodeSource = {
+	canDrag(dragged) {
+		return dragged.draggable;
+	},
+
+
 	beginDrag(dragged) {
 		dragged.drag(dragged.node);
 		return dragged;
@@ -111,16 +116,20 @@ const nodeTarget = {
 
 
 function calculateNodeClassNames(node) {
-	const hoverClass = node.has('hover') ? ` ${node.get('hover')} hover` : '';
-	const dragClass = node.has('drag') ? ' drag' : '';
-	const selectedClass = node.has('selected') ? ' selected' : '';
+	const hoverClass = node.has('hover') ? `${node.get('hover')} hover` : '';
+	const dragClass = node.has('drag') ? 'drag' : '';
+	const selectedClass = node.get('selected') ? 'selected' : '';
 	const customClass = node.has('className') ? node.get('className') : '';
-	const collapsedClass = node.get('collapsed') ? ' collapsed' : '';
-
+	const collapsedClass = node.get('collapsed') ? 'collapsed' : '';
+	const space = ' ';
 	return hoverClass +
+		space +
 		dragClass +
+		space +
 		selectedClass +
+		space +
 		customClass +
+		space +
 		collapsedClass;
 }
 
@@ -146,7 +155,7 @@ class Node extends Component {
 		return connectDragSource(connectDropTarget((
 			<li
 				ref={(element) => { this.element = element; }}
-				className={`no-list node${calculateNodeClassNames(node)}`}
+				className={`no-list node ${calculateNodeClassNames(node)}`}
 			>
 				{nodeJSX}
 				<ul
@@ -177,12 +186,15 @@ Node.propTypes = {
 	cancelDrop: PropTypes.func,
 	//eslint-disable-next-line react/no-unused-prop-types
 	stopHover: PropTypes.func,
+	//eslint-disable-next-line react/no-unused-prop-types
+	draggable: PropTypes.bool,
 	children: PropTypes.node,
 	nodeRenderer: PropTypes.func.isRequired,
 };
 
 Node.defaultProps = {
 	children: undefined,
+	draggable: true,
 	cancelDrop() {},
 	stopHover() {},
 	hover() {},

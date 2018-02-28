@@ -30,20 +30,19 @@ function reducer(state, actionObj) {
 	const action = fromJS(actionObj);
 	switch (action.get('type')) {
 	case actions.COLLAPSE:
-		return state.set('tree', reducers.collapseNode(state.get('tree'), action));
+		return collapseNodeReducer(state, action);
 	case actions.SELECT:
-		return state.set('tree', reducers.selectNode(state.get('tree'), action));
+		return selectNodeReducer(state, action);
 	case actions.CANCEL_DROP:
-		return state.set('tree', reducers.cancelDrop(state.get('tree')));
+		return cancelDropReducer(state);
 	case actions.STOP_HOVER:
-		return state.set('tree', reducers.stopHover(state.get('tree')));
+		return stopHoverReducer(state);
 	case actions.DROP:
-		return state.set('tree', reducers.dropNode(state.get('tree'), action, canDrop));
+		return dropNodeReducer(state, action);
 	case actions.DRAG:
-		return state.set('tree', reducers.dragNode(state.get('tree'), action));
+		return dragNodeReducer(state, action);
 	case actions.HOVER:
-		return state.set('tree',
-			reducers.setHoverEffects(state.get('tree'), action, canDrop));
+		return hoverNodeReducer(state, action);
 	default:
 		return state;
 	}
@@ -85,12 +84,57 @@ function drag(s) {
 }
 
 
+function collapseNodeReducer(state, action) {
+	return state.set('tree', reducers.collapseNode(state.get('tree'), action));
+}
+
+
+function selectNodeReducer(state, action) {
+	return state.set('tree', reducers.selectNode(state.get('tree'), action));
+}
+
+
+function cancelDropReducer(state) {
+	return state.set('tree', reducers.cancelDrop(state.get('tree')));
+}
+
+function stopHoverReducer(state) {
+	return state.set('tree', reducers.stopHover(state.get('tree')));
+}
+
+
 function canDrop(action) {
 	if (action.getIn([ 'target', 'type' ]) === 'search' &&
 		action.get('position') === positions.get('INTO')) {
 		return false;
 	}
 	return true;
+}
+
+
+function dropNodeReducer(state, action) {
+	if (!canDrop(action)) {
+		return state.set('tree',
+			reducers.removeEffects(state.get('tree'), [ 'hover', 'drag' ])
+		);
+	}
+	return state.set('tree', reducers.dropNode(state.get('tree'), action));
+}
+
+
+function dragNodeReducer(state, action) {
+	return state.set('tree', reducers.dragNode(state.get('tree'), action));
+
+}
+
+
+function hoverNodeReducer(state, action) {
+	if (!canDrop(action)) {
+		const treeCopy = reducers.removeEffects(state.get('tree'), [ 'hover' ]);
+		return state.set('tree', treeCopy);
+	}
+	return state.set('tree',
+		reducers.setHoverEffects(state.get('tree'), action, canDrop));
 }
 
 
@@ -194,6 +238,7 @@ storiesOf('Drag and Drop', module).
 storiesOf('Interactive Tree', module).
 		add('Tree Rendering', rerenderOn(store.subscribe, () => (
 			<Tree
+				draggable={false}
 				tree={store.getState().get('tree')}
 				renderNode={(nodeData) => (<ExampleNode data={nodeData} />)}
 			/>
@@ -245,7 +290,7 @@ storiesOf('Interactive Tree', module).
 				}
 			/>
 		))).
-		add('1000 Node', rerenderOn(largeStore.subscribe, () => (
+		add('1000 Nodes', rerenderOn(largeStore.subscribe, () => (
 			<Tree
 				tree={largeStore.getState().get('tree')}
 				cancelDrop={cancelDrop(largeStore)}
@@ -264,7 +309,7 @@ storiesOf('Interactive Tree', module).
 				}
 			/>
 		))).
-		add('3000 Node', rerenderOn(xlStore.subscribe, () => (
+		add('3000 Nodes', rerenderOn(xlStore.subscribe, () => (
 			<Tree
 				tree={xlStore.getState().get('tree')}
 				cancelDrop={cancelDrop(xlStore)}

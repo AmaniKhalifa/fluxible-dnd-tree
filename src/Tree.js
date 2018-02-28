@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import HTML5Backend from 'react-dnd-html5-backend';
 import Node from './Node';
 
-function buildNode(nodes, handlers) {
+function buildNode(nodes, handlers, draggable) {
 	return nodes.map((node) => (
 		<Node
 			key={node.get('id')}
@@ -13,10 +13,11 @@ function buildNode(nodes, handlers) {
 			drop={(...args) => handlers.drop(...args)}
 			hover={(...args) => handlers.hover(...args)}
 			stopHover={(...args) => handlers.stopHover(...args)}
+			draggable={draggable}
 			node={node}
 			nodeRenderer={handlers.renderNode}
 		>
-			{node.has('children') && buildNode(node.get('children'), handlers)}
+			{node.has('children') && buildNode(node.get('children'), handlers, draggable)}
 		</Node>
 	));
 }
@@ -51,18 +52,22 @@ class Tree extends Component {
 			hover,
 			tree,
 			renderNode,
+			draggable
 		} = this.props;
 		return (
 			<ul className="no-list">
-				{buildNode(this.state.tree, {
-					cancelDrop,
-					stopHover,
-					drop,
-					drag,
-					hover,
-					tree,
-					renderNode,
-				})}
+				{buildNode(
+					this.state.tree,
+					{
+						cancelDrop,
+						stopHover,
+						drop,
+						drag,
+						hover,
+						tree,
+						renderNode,
+					},
+					draggable)}
 			</ul>
 		);
 	}
@@ -75,6 +80,7 @@ Tree.defaultProps = {
 	renderNode() {},
 	stopHover() {},
 	drag() {},
+	draggable: true,
 	tree: [],
 };
 
@@ -84,6 +90,7 @@ Tree.propTypes = {
 	drop: PropTypes.func,
 	drag: PropTypes.func,
 	hover: PropTypes.func,
+	draggable: PropTypes.bool,
 	tree: PropTypes.shape([]).isRequired,
 	renderNode: PropTypes.func.isRequired,
 };
