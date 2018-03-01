@@ -52,7 +52,7 @@ class Tree extends Component {
 			hover,
 			tree,
 			renderNode,
-			draggable
+			draggable,
 		} = this.props;
 		return (
 			<ul className="no-list">
