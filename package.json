@@ -16,6 +16,16 @@
   },
   "author": "Amani Khalifa (https://github.com/AmaniSalah)",
   "license": "MIT",
+  "dependencies": {
+    "immutable": "3.8.2",
+    "prop-types": "15.6.0",
+    "react-dnd": "2.5.4",
+    "react-dnd-html5-backend": "2.5.4"
+  },
+  "peerDependencies": {
+    "react": "15.6.1",
+    "react-dom": "15.6.1"
+  },
   "devDependencies": {
     "@kadira/storybook": "2.35.3",
     "css-loader": "0.23.1",
@@ -36,13 +46,5 @@
     "redux": "3.7.2",
 	"babel-core": "6.26.0",
 	"babel-loader": "7.1.3"
-  },
-  "dependencies": {
-    "immutable": "3.8.2",
-    "prop-types": "15.6.0",
-    "react": "15.6.1",
-    "react-dnd": "2.5.4",
-    "react-dnd-html5-backend": "2.5.4",
-    "react-dom": "15.6.1"
   }
 }
