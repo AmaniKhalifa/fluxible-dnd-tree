@@ -1,8 +1,12 @@
 {
-  "name": "uber-tree",
+  "name": "react-dnd-tree",
   "version": "1.5.1",
   "description": "Ubermetrics draggable tree",
   "main": "index.js",
+  "repository": {
+  "type": "git",
+  "url": "git@bitbucket.org:ubermetrics/uber-tree.git"
+  },
   "scripts": {
     "dist": "npm run lint && npm run build",
     "build": "webpack",
@@ -10,7 +14,7 @@
     "develope": "webpack-dev-server --hot --inline",
     "storybook": "start-storybook -p 9001 -c .storybook"
   },
-  "author": "Amani Khalifa",
+  "author": "Amani Khalifa (https://github.com/AmaniSalah)",
   "license": "MIT",
   "devDependencies": {
     "@kadira/storybook": "2.35.3",
