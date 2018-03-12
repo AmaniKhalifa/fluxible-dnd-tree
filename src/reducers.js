@@ -120,7 +120,6 @@ function getParent(nodes, id) {
 			}
 
 			return getParent(node.get('children'), id);
-
 		}
 		return undefined;
 	}).filter(Boolean).first();

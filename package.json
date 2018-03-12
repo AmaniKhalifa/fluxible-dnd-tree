@@ -27,7 +27,6 @@
     "babel-preset-react": "6.5.0",
     "eslint": "3.19.0",
     "eslint-config-airbnb": "14.1.0",
-    "eslint-config-ubermetrics": "git@bitbucket.org:ubermetrics/eslint-config-ubermetrics.git#1.0.3",
     "eslint-plugin-import": "2.7.0",
     "eslint-plugin-jsx-a11y": "4.0.0",
     "eslint-plugin-react": "6.10.3",
