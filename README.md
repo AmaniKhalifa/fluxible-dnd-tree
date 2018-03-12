@@ -35,24 +35,24 @@
 ```
 ## Options
 
-Property       | Type                             | Default             | Required | Description
-:--------------|:--------------------------------:|:-------------------:|:--------:|:----------------------------------------
-tree           | immutable List of Immutable Maps |                     |   yes    | Tree data with the following keys: <div>`id` is the primary key for the node.</div>
-																				   |<div>`hover` true if the node is being hovered by another node, false if not.</div>
-																				   |<div>`drag` true if the node is being dragged, false if not.</div>
-																				   |<div>`collapsed` hides children of the node if false, or hides them if true. Defaults to false.</div>
-																				   |<div>`children` is an array of child nodes belonging to the node.</div>
-																				   |<div>`selected` true if the node is selected, false if not.</div>
-																				   |<div>`className` a string  of classes separated by space for any extra class you want to add to the node.</div>
-																				   |other properties can be added and used in the renderNode prop
-																				   |__Example__: `[{id: '1', title: 'Node 1'}, { title: 'Parent', collapsed: true, children: [{ title: 'value3') }] }]`
-renderNode     | function                         |                     |    yes   | a function that expects the nodeData (immutable Map) and returns a JSX object of how the node would look like.
-cancelDrop     | function                         |     () => {}        |          | called when a dragged node is dropped while not hovering on any other node.
-drop           | function                         |     () => {}        |          | called when a dragged node is dropped in a new position.
-drag           | function                         |     () => {}        |          | called when dragging begins.
-hover          | function                         |     () => {}        |          | called when a dragged node is hovering another node
-stopHover      | function                         |     () => {}        |          | called when the dragged node stops hovering on any other node.
-draggable      | boolean                          |      true           |          | True if the nodes are draggable, false if not.
+Property        |            Type                   |   Default     |   Required  | Description
+:---------------|:---------------------------------:|:-------------:|:-----------:|:----------------------------------------
+tree            | immutable List of Immutable Maps  |               |		      | Tree data with the following keys: <div>`id` is the primary key for the node.</div>
+				|									|				|			  |<div>`hover` true if the node is being hovered by another node, false if not.</div>
+				|									|   			|			  |<div>`drag` true if the node is being dragged, false if not.</div>
+				|									|		   		|			  |<div>`collapsed` hides children of the node if false, or hides them if true. Defaults to false.</div>
+				|									|		   		|			  |<div>`children` is an array of child nodes belonging to the node.</div>
+				|									|		   		|			  |<div>`selected` true if the node is selected, false if not.</div>
+				|									|		   		|			  |<div>`className` a string  of classes separated by space for any extra class you want to add to the node.</div>
+				|									|		   		|			  |other properties can be added and used in the renderNode prop
+				|									|		   		|			  |__Example__: `[{id: '1', title: 'Node 1'}, { title: 'Parent', collapsed: true, children: [{ title: 'value3') }] }]`
+renderNode      | function                          |               |   yes       | a function that expects the nodeData (immutable Map) and returns a JSX object of how the node would look like.
+cancelDrop      | function                          |     () => {}  |             | called when a dragged node is dropped while not hovering on any other node.
+drop            | function                          |     () => {}  |             | called when a dragged node is dropped in a new position.
+drag            | function                          |     () => {}  |             | called when dragging begins.
+hover           | function                          |     () => {}  |             | called when a dragged node is hovering another node
+stopHover       | function                          |     () => {}  |             | called when the dragged node stops hovering on any other node.
+draggable       | boolean                           |      true     |             | True if the nodes are draggable, false if not.
 
 You can implement these functions, or use the already made reducers and actionCreators as specified in storybook example.
 
