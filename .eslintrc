@@ -15,5 +15,6 @@
         'react/jsx-indent-props': [1, 'tab'],
         'react/jsx-filename-extension': 0,
         'dot-location': [2, 'object'],
+        'import/no-extraneous-dependencies': 0,
     }
 }
