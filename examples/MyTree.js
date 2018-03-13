@@ -139,8 +139,6 @@ function hoverNodeReducer(state, action) {
 
 
 function Node(data) {
-	const icon = (!data.get('collapsed') && data.get('type') !== 'search') ?
-		'folder-open' : data.get('type');
 	return [
 		<input
 			id={`checkbox_node_${data.get('id')}`}
@@ -150,7 +148,7 @@ function Node(data) {
 		/>,
 		<span onClick={click} className="container" >
 			{data.get('title')}
-		</span>
+		</span>,
 	];
 }
 

@@ -80,7 +80,6 @@ function drag(s) {
 	return (dragged) => {
 		s.dispatch(actionCreators.createDragAction(dragged));
 	};
-
 }
 
 
@@ -115,8 +114,7 @@ function canDrop(action) {
 function dropNodeReducer(state, action) {
 	if (!canDrop(action)) {
 		return state.set('tree',
-			reducers.removeEffects(state.get('tree'), [ 'hover', 'drag' ])
-		);
+			reducers.removeEffects(state.get('tree'), [ 'hover', 'drag' ]));
 	}
 	return state.set('tree', reducers.dropNode(state.get('tree'), action));
 }
@@ -124,7 +122,6 @@ function dropNodeReducer(state, action) {
 
 function dragNodeReducer(state, action) {
 	return state.set('tree', reducers.dragNode(state.get('tree'), action));
-
 }
 
 
