@@ -118,10 +118,11 @@ case actions.HOVER:
 
 // Pass the action reducer to the Tree component
 function hover(dragged, target, position) {
-		s.dispatch(actionCreators.createHoverAction(dragged, target, position));
+		store.dispatch(actionCreators.createHoverAction(dragged, target, position));
 }
 
-function canDrop(action) {
+// used in the hoverNodeReducer to control the hovering behavior
+function canHover(action) {
 	if (action.getIn([ 'target', 'type' ]) === 'leaf' &&
 		action.get('position') === positions.get('INTO')) {
 		return false;
@@ -129,15 +130,15 @@ function canDrop(action) {
 	return true;
 }
 
-// Here you can control the dropping behaviour.
+// Here you can control the hovering behavior.
 function hoverNodeReducer(state, action) {
-	if (!canDrop(action)) {
-		// If the dropping is not allowed you have to remove all hovering effects.
+	if (!canHover(action)) {
+		// If the hovering is not allowed you have to remove all hovering effects.
 		const treeCopy = reducers.removeEffects(state.get('tree'), [ 'hover' ]);
 		return state.set('tree', treeCopy);
 	}
 	return state.set('tree',
-		reducers.setHoverEffects(state.get('tree'), action, canDrop));
+		reducers.setHoverEffects(state.get('tree'), action));
 }
 ```
 
@@ -197,6 +198,17 @@ case actions.DROP:
 function drop(dragged, target, position) {
 	store.dispatch(actionCreators.createDropAction(dragged, target, position));
 }
+
+
+// used in the dropNodeReducer to control the dropping behavior
+function canDrop(action) {
+	if (action.getIn([ 'target', 'type' ]) === 'leaf' &&
+		action.get('position') === positions.get('INTO')) {
+		return false;
+	}
+	return true;
+}
+
 
 // Here you can control the dropping behaviour.
 function dropNodeReducer(state, action) {
