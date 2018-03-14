@@ -1,8 +1,12 @@
 {
-  "name": "uber-tree",
+  "name": "react-dnd-tree",
   "version": "1.5.1",
   "description": "Ubermetrics draggable tree",
   "main": "index.js",
+  "repository": {
+  "type": "git",
+  "url": "git@bitbucket.org:ubermetrics/uber-tree.git"
+  },
   "scripts": {
     "dist": "npm run lint && npm run build",
     "build": "webpack",
@@ -10,8 +14,23 @@
     "develope": "webpack-dev-server --hot --inline",
     "storybook": "start-storybook -p 9001 -c .storybook"
   },
-  "author": "Amani Khalifa",
+  "author": "UberMetrics Technologies",
+  "contributors": [
+   "Amani Khalifa <amani.salah.khalifa@gmail.com> (http://github.com/AmaniSalah)",
+   "Jakob Fuhrmann",
+   "Ramy Rais"
+ ],
   "license": "MIT",
+  "dependencies": {
+    "immutable": "3.8.2",
+    "prop-types": "15.6.0",
+    "react-dnd": "2.5.4",
+    "react-dnd-html5-backend": "2.5.4"
+  },
+  "peerDependencies": {
+    "react": "15.6.1",
+    "react-dom": "15.6.1"
+  },
   "devDependencies": {
     "@kadira/storybook": "2.35.3",
     "css-loader": "0.23.1",
@@ -23,7 +42,6 @@
     "babel-preset-react": "6.5.0",
     "eslint": "3.19.0",
     "eslint-config-airbnb": "14.1.0",
-    "eslint-config-ubermetrics": "git@bitbucket.org:ubermetrics/eslint-config-ubermetrics.git#1.0.3",
     "eslint-plugin-import": "2.7.0",
     "eslint-plugin-jsx-a11y": "4.0.0",
     "eslint-plugin-react": "6.10.3",
@@ -33,13 +51,5 @@
     "redux": "3.7.2",
 	"babel-core": "6.26.0",
 	"babel-loader": "7.1.3"
-  },
-  "dependencies": {
-    "immutable": "3.8.2",
-    "prop-types": "15.6.0",
-    "react": "15.6.1",
-    "react-dnd": "2.5.4",
-    "react-dnd-html5-backend": "2.5.4",
-    "react-dom": "15.6.1"
   }
 }

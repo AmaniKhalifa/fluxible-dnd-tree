@@ -14,7 +14,6 @@ export function ExampleNodeCollapse({ data, click }) {
 			<small>{data.get('title')}</small>
 		</span>
 	);
-
 }
 
 ExampleNodeCollapse.propTypes = {
