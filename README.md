@@ -65,6 +65,7 @@
 
 ###  drag
 > Function
+
 * **signature**
 	* drag(dragged)
 * **args**
@@ -92,6 +93,7 @@ function dragNodeReducer(state, action) {
 
 ###  hover
 > Function
+
 * **signature**
 	* hover(dragged, target, position)
 * **args**
@@ -143,6 +145,7 @@ function hoverNodeReducer(state, action) {
 
 ###  cancelDrop
 >Function
+
 * **signature**
 	* cancelDrop()
 
@@ -170,6 +173,7 @@ function cancelDropReducer(state) {
 
 ###  drop
 > Function
+
 * **signature**
 	* drop(dragged, target, position)
 * **args**
@@ -212,6 +216,7 @@ function dropNodeReducer(state, action) {
 
 ###  stopHover
 > Function
+
 * **signature**
 	* stopHover()
 
