@@ -1,3 +1,21 @@
 {
-    "extends": "eslint-config-ubermetrics"
+    "extends": "eslint-config-airbnb",
+    "rules": {
+        "no-tabs": 0,
+        "indent": [ 1, 'tab' ],
+        'no-use-before-define': ['error', { functions: false, classes: true }],
+        'func-names': [1, 'never'],
+        'prefer-arrow-callback': 0,
+        'array-bracket-spacing': [1, 'always'],
+        'brace-style': [2, 'stroustrup', { allowSingleLine: true }],
+        'arrow-parens': [1, 'always'],
+        'space-before-function-paren': [2, 'never'],
+        'spaced-comment': 0,
+        'react/jsx-indent': [1, 'tab'],
+        'react/jsx-indent-props': [1, 'tab'],
+        'react/jsx-filename-extension': 0,
+        'dot-location': [2, 'object'],
+        'import/no-extraneous-dependencies': 0,
+        'jsx-a11y/no-static-element-interactions': 1,
+    }
 }
