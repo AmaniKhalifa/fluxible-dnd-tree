@@ -158,7 +158,7 @@ If you're using redux, you can dispatch a `HOVER` action and handle your store s
 `store.js`
 
 ```javascript
-import Tree, { reducers, actions, actionCreators } from 'react-dnd-tree';
+import { actions } from 'react-dnd-tree';
 import { hoverNodeReducer } from './reducers'
 
 // handle the action in your store reducer function
@@ -221,7 +221,7 @@ let projectList = List.of(...); // define your Tree
 
 function hover(draggedNode) {
 	projectList = reducers.setHoverEffects(projectList,
-		actionCreators.actionCreators.createHoverAction(dragged, target, position));
+		actionCreators.createHoverAction(dragged, target, position));
 	// The projectList is now updated using the default setHoverEffects reducer.
 	// In order to see the changes in the Tree component
 	// It should be re-rendered using the new projectList.
@@ -248,7 +248,7 @@ If you're using redux, you can dispatch a `CANCEL_DROP` action and handle your s
 `store.js`
 
 ```javascript
-import Tree, { reducers, actions, actionCreators } from 'react-dnd-tree';
+import { actions } from 'react-dnd-tree';
 import { cancelDropReducer } from './reducers'
 
 // handle the action in your store reducer function
@@ -309,7 +309,7 @@ If you're using redux, you can dispatch a `DROP` action and handle your store st
 `store.js`
 
 ```javascript
-import Tree, { reducers, actions, actionCreators } from 'react-dnd-tree';
+import { actions } from 'react-dnd-tree';
 import { dropNodeReducer } from './reducers'
 
 // handle the action in your store reducer function
@@ -374,7 +374,7 @@ let projectList = List.of(...); // define your Tree
 
 function drop(draggedNode) {
 	projectList = reducers.dropNode(projectList,
-		actionCreators.actionCreators.createDropAction(dragged, target, position));
+		actionCreators.createDropAction(dragged, target, position));
 	// The projectList is now updated using the default dropNode reducer.
 	// In order to see the changes in the Tree component
 	// It should be re-rendered using the new projectList.
@@ -401,7 +401,7 @@ If you're using redux, you can dispatch a `STOP_HOVER` action and handle your st
 `store.js`
 
 ```javascript
-import Tree, { reducers, actions, actionCreators } from 'react-dnd-tree';
+import { actions } from 'react-dnd-tree';
 import { stopHoverReducer } from './reducers'
 
 // handle the action in your store reducer function
