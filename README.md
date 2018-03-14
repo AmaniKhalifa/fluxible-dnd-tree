@@ -35,33 +35,28 @@
 		/>
 	}
 />
-
 ```
+**PLEASE NOTE:** The library do not handle the state changes of the tree on it is own. It is provided through default reducers or you can implement your own reducers. This will be shown by examples. Also the library use [immutable data](https://facebook.github.io/immutable-js/). So **Map** and **List** refers to [immtable Map object](https://facebook.github.io/immutable-js/docs/#/Map) and [immutable List object](https://facebook.github.io/immutable-js/docs/#/List) respectively.
 
-## Props
+#### Props
 
-###  Tree
+##### Tree
 > Immutable List of immutable Maps
 * ##### Node object
-	* id
-		* the primary key for the node.
-	* hover
-		* If the node is being hovered by another node, hover will have the position of the dragged node in relative to this node.
-		* You can import positions from 'react-dnd-tree' to get all the values of position.
-		* It could be one of three :
-			* positions.get('BEFORE')
-			* positions.get('INTO')
-			* positions.get('AFTER')
-	* drag
-		* True if the node is being dragged, false if not.
-	* collapsed
-		* When true, it hides the children of the node, shows the children if false.
-	* selected
-		* True if the node is selected.
-	* className
-		* a string of custom classes separated by space for any extra class you want to add to the node.
-	* children
-		* An array of nodes.
+	* id: the primary key for the node.
+	* hover: is equal to one of those values: 'BEFORE', 'INTO', 'AFTER'.
+		+ If the node is being hovered by another node, hover will have the position of the dragged node relatively to this node.
+		* The values are provided through the Map object positions.
+			```javascript
+			import { positions } from 'react-dnd-tree'; 
+			```
+	* drag: True if the node is being dragged, otherwise false.
+	* collapsed:
+		* true: Hides the children of the node.
+		* false: Shows the children of the node.
+	* selected: true if the node is selected, otherwise false.
+	* className: A string of custom classes separated by space for any extra class you want to add to the node.
+	* children: An array of nodes.
 
 ###  drag
 > Function
@@ -69,8 +64,7 @@
 * **signature**
 	* drag(dragged)
 * **args**
-	* **dragged**: Map object of the dragged node data.
-called at the start of node dragging.
+	* **dragged**: an immutable Map that contains the data of the dragged node. It is called at the start of node dragging.
 If you're using redux, you can dispatch a `DRAG` action and handle your store state using the ready made reducers.
 ```javascript
 import Tree, { reducers, actions, actionCreators } from 'react-dnd-tree';
