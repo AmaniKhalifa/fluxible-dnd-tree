@@ -1,22 +1,23 @@
 
 
+
 # react-dnd-tree #
 > Highly customisable drag and drop tree
 
   react-dnd-tree is a Drag and Drop Tree using [React dnd library](http://react-dnd.github.io/)
 
-  ### Advantages
+  ## Advantages
   * You can customize how will your node look like.
   * You get more control into the dragging and dropping behaviour.
 
 
-### Installation
+## Installation
 ```sh
 	npm install react-dnd-tree --save
 ```
 
 
-### Usage
+## Usage
 ```javascript
 
 <Tree
@@ -39,9 +40,9 @@
 ```
 **PLEASE NOTE:** The library do not handle the state changes of the tree on it is own. It is provided through default reducers or you can implement your own reducers. This will be shown by examples. Also the library use [immutable data](https://facebook.github.io/immutable-js/). So **Map** and **List** refers to [immtable Map object](https://facebook.github.io/immutable-js/docs/#/Map) and [immutable List object](https://facebook.github.io/immutable-js/docs/#/List) respectively.
 
-#### Props
+### Props
 
-##### Tree
+#### Tree
 > Immutable List of immutable Maps
 * ##### Node object
 	* id: the primary key for the node.
@@ -59,7 +60,7 @@
 	* className: A string of custom classes separated by space for any extra class you want to add to the node.
 	* children: An array of nodes having the same structure as the tree.
 
-###  drag
+####  drag
 > Function
 
 * **signature**
@@ -67,7 +68,6 @@
 * **args**
 	* **dragged**: a Map that contains the data of the dragged node. It is called at the start of node dragging.
 
-###### examples
 
 > If you're using Redux, or Redux like architecture.
 
@@ -135,8 +135,8 @@ const component = (
 );
 ```
 
-
-###  hover
+----
+#### hover
 > Function
 
 * **signature**
@@ -154,6 +154,7 @@ const component = (
 called at the start of node dragging.
 called when a node is hovered by another node.
 If you're using redux, you can dispatch a `HOVER` action and handle your store state using the ready made reducers.
+
 
 `store.js`
 
@@ -236,7 +237,9 @@ const component = (
 );
 ```
 
-###  cancelDrop
+----
+
+####  cancelDrop
 >Function
 
 * **signature**
@@ -244,6 +247,7 @@ const component = (
 
 called when the node is dropped outside of a hovering area.
 If you're using redux, you can dispatch a `CANCEL_DROP` action and handle your store state using the ready made reducers.
+
 
 `store.js`
 
@@ -287,7 +291,10 @@ const component = (
 );
 ```
 
-###  drop
+------
+
+####  drop
+
 > Function
 
 * **signature**
@@ -388,6 +395,10 @@ const component = (
 	/>
 );
 ```
+
+-----
+
+
 ###  stopHover
 > Function
 
@@ -397,6 +408,10 @@ const component = (
 
 called when the node is still being dragged but not hovering on any other node.
 If you're using redux, you can dispatch a `STOP_HOVER` action and handle your store state using the ready made reducers.
+
+
+###### examples
+
 
 `store.js`
 
@@ -440,10 +455,14 @@ const component = (
 
 ```
 
+-----
+
 ### draggable
 >Boolean
 
 `False` if the tree nodes are not draggable, default is `True`
+
+------
 
 ### renderNode
 >Function
@@ -474,13 +493,13 @@ const component = (
 
 You can implement these functions, or use the already made reducers and actionCreators as specified in storybook example.
 
-### Development ###
+## Development ###
 
 * run `npm install`
 * Usage examples are in storybook.
 * Running storybook using : `npm run storybook`
 * In your browser, go to http://localhost:9001/
 
-### How to contribute ###
+## How to contribute ###
 
 * Contribution is welcome through pull requests.
