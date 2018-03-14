@@ -14,7 +14,12 @@
     "develope": "webpack-dev-server --hot --inline",
     "storybook": "start-storybook -p 9001 -c .storybook"
   },
-  "author": "Amani Khalifa (https://github.com/AmaniSalah)",
+  "author": "UberMetrics Technologies",
+  "contributors": [
+   "Amani Khalifa <amani.salah.khalifa@gmail.com> (http://github.com/AmaniSalah)",
+   "Jakob Fuhrmann",
+   "Ramy Rais"
+ ],
   "license": "MIT",
   "dependencies": {
     "immutable": "3.8.2",
