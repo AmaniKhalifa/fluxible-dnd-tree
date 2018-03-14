@@ -264,6 +264,9 @@ function stopHoverReducer(state) {
 * **return value**
 	* a JSX node component
 
+## Example
+	check the example [here](examples/MyTree.js)
+
 ## Options
 
 
