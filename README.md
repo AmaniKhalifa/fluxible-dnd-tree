@@ -56,34 +56,84 @@
 		* false: Shows the children of the node.
 	* selected: true if the node is selected, otherwise false.
 	* className: A string of custom classes separated by space for any extra class you want to add to the node.
-	* children: An array of nodes.
+	* children: An array of nodes having the same structure as the tree.
 
 ###  drag
 > Function
 
 * **signature**
-	* drag(dragged)
+	* drag(draggedNode)
 * **args**
-	* **dragged**: an immutable Map that contains the data of the dragged node. It is called at the start of node dragging.
-If you're using redux, you can dispatch a `DRAG` action and handle your store state using the ready made reducers.
-```javascript
-import Tree, { reducers, actions, actionCreators } from 'react-dnd-tree';
+	* **dragged**: a Map that contains the data of the dragged node. It is called at the start of node dragging.
 
-const store = // define you store or import it.
+###### examples
+
+> If you're using Redux, or Redux like architecture.
+
+`store.js`
+```javascript
+import { actions } from 'react-dnd-tree';
+import { dragNodeReducer } from './reducers';
 
 // handle the action in your store reducer function
 case actions.DRAG:
 	return dragNodeReducer(state, action);
+```
 
-// Pass the action reducer to the Tree component
-function drag(dragged) {
-	store.dispatch(actionCreators.createDragAction(dragged));
-}
+`reducers.js`
+```javascript
+import { reducers } from 'react-dnd-tree';
 
 function dragNodeReducer(state, action) {
 	return state.set('tree', reducers.dragNode(state.get('tree'), action));
 }
+export dragNodeReducer;
 ```
+
+`yourComponent.js`
+```javascript
+import Tree, { actionCreators } from 'react-dnd-tree';
+import myStore from './store';
+
+// Pass the action reducer to the Tree component
+function drag(dragged) {
+	myStore.dispatch(actionCreators.createDragAction(dragged));
+}
+
+const component = (
+	<Tree
+		tree={tree}
+		drag={drag}
+		...
+	/>
+);
+
+```
+---
+> When you don't have Redux or Redux like architecture. 
+```javascript
+import Tree, { reducers, actionCreators } from 'react-dnd-tree`;
+import { List } from 'immutable';
+
+let projectList = List.of(...); // define your Tree
+
+function drag(draggedNode) {
+	projectList = reducers.dragNode(projectList,
+		actionCreators.createDragAction(dragged));
+	// The projectList is now updated using the default dragNode reducer.
+	// In order to see the chagnes in the Tree componenet
+	// It should be re-rendered using the new projectList.
+}
+
+const component = (
+	<Tree
+		tree={tree}
+		drag={drag}
+		...
+	/>
+);
+```
+
 
 ###  hover
 > Function
