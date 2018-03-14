@@ -1,4 +1,5 @@
 
+
 # react-dnd-tree #
 > Highly customisable drag and drop tree
 
@@ -48,7 +49,7 @@
 		+ If the node is being hovered by another node, hover will have the position of the dragged node relatively to this node.
 		* The values are provided through the Map object positions.
 			```javascript
-			import { positions } from 'react-dnd-tree'; 
+			import { positions } from 'react-dnd-tree';
 			```
 	* drag: True if the node is being dragged, otherwise false.
 	* collapsed:
@@ -110,18 +111,18 @@ const component = (
 
 ```
 ---
-> When you don't have Redux or Redux like architecture. 
+> When you don't have Redux or Redux like architecture.
 ```javascript
-import Tree, { reducers, actionCreators } from 'react-dnd-tree`;
+import Tree, { reducers, actionCreators } from 'react-dnd-tree';
 import { List } from 'immutable';
 
 let projectList = List.of(...); // define your Tree
 
 function drag(draggedNode) {
 	projectList = reducers.dragNode(projectList,
-		actionCreators.createDragAction(dragged));
+		actionCreators.createDragAction(dragged, target, position));
 	// The projectList is now updated using the default dragNode reducer.
-	// In order to see the chagnes in the Tree componenet
+	// In order to see the changes in the Tree component
 	// It should be re-rendered using the new projectList.
 }
 
@@ -153,19 +154,21 @@ const component = (
 called at the start of node dragging.
 called when a node is hovered by another node.
 If you're using redux, you can dispatch a `HOVER` action and handle your store state using the ready made reducers.
+
+`store.js`
+
 ```javascript
 import Tree, { reducers, actions, actionCreators } from 'react-dnd-tree';
-
-const store = // define you store or import it.
+import { hoverNodeReducer } from './reducers'
 
 // handle the action in your store reducer function
 case actions.HOVER:
 	return hoverNodeReducer(state, action);
+```
 
-// Pass the action reducer to the Tree component
-function hover(dragged, target, position) {
-		store.dispatch(actionCreators.createHoverAction(dragged, target, position));
-}
+`reducers.js`
+```javascript
+import { reducers } from 'react-dnd-tree';
 
 // used in the hoverNodeReducer to control the hovering behavior
 function canHover(action) {
@@ -176,7 +179,6 @@ function canHover(action) {
 	return true;
 }
 
-// Here you can control the hovering behavior.
 function hoverNodeReducer(state, action) {
 	if (!canHover(action)) {
 		// If the hovering is not allowed you have to remove all hovering effects.
@@ -186,6 +188,52 @@ function hoverNodeReducer(state, action) {
 	return state.set('tree',
 		reducers.setHoverEffects(state.get('tree'), action));
 }
+
+export hoverNodeReducer;
+```
+
+`yourComponent.js`
+```javascript
+import Tree, { actionCreators } from 'react-dnd-tree';
+import myStore from './store';
+
+// Pass the action reducer to the Tree component
+function hover(dragged, target, position) {
+	myStore.dispatch(actionCreators.createHoverAction(dragged, target, position));
+}
+
+const component = (
+	<Tree
+		tree={tree}
+		hover={hover}
+		...
+	/>
+);
+
+```
+
+> When you don't have Redux or Redux like architecture.
+```javascript
+import Tree, { reducers, actionCreators } from 'react-dnd-tree';
+import { List } from 'immutable';
+
+let projectList = List.of(...); // define your Tree
+
+function hover(draggedNode) {
+	projectList = reducers.setHoverEffects(projectList,
+		actionCreators.actionCreators.createHoverAction(dragged, target, position));
+	// The projectList is now updated using the default setHoverEffects reducer.
+	// In order to see the changes in the Tree component
+	// It should be re-rendered using the new projectList.
+}
+
+const component = (
+	<Tree
+		tree={tree}
+		hover={hover}
+		...
+	/>
+);
 ```
 
 ###  cancelDrop
@@ -196,24 +244,47 @@ function hoverNodeReducer(state, action) {
 
 called when the node is dropped outside of a hovering area.
 If you're using redux, you can dispatch a `CANCEL_DROP` action and handle your store state using the ready made reducers.
+
+`store.js`
+
 ```javascript
 import Tree, { reducers, actions, actionCreators } from 'react-dnd-tree';
-
-const store = // define you store or import it.
+import { cancelDropReducer } from './reducers'
 
 // handle the action in your store reducer function
 case actions.CANCEL_DROP:
 	return cancelDropReducer(state);
+```
 
-// Pass the action reducer to the Tree component
-function cancelDrop() {
-	store.dispatch(actionCreators.createCancelDropAction());
-}
+`reducers.js`
+```javascript
+import { reducers } from 'react-dnd-tree';
 
 function cancelDropReducer(state) {
 	return state.set('tree', reducers.cancelDrop(state.get('tree')));
 }
 
+export cancelDropReducer;
+```
+
+
+`yourComponent.js`
+```javascript
+import Tree, { actionCreators } from 'react-dnd-tree';
+import myStore from './store';
+
+// Pass the action reducer to the Tree component
+function cancelDrop() {
+	myStore.dispatch(actionCreators.createCancelDropAction());
+}
+
+const component = (
+	<Tree
+		tree={tree}
+		cancelDrop={cancelDrop}
+		...
+	/>
+);
 ```
 
 ###  drop
@@ -233,20 +304,22 @@ function cancelDropReducer(state) {
 
 called when the node is dropped into a hovering area.
 If you're using redux, you can dispatch a `DROP` action and handle your store state using the ready made reducers.
-```javascript
-import Tree, { reducers, actions, positions, actionCreators } from 'react-dnd-tree';
 
-const store = // define you store or import it.
+
+`store.js`
+
+```javascript
+import Tree, { reducers, actions, actionCreators } from 'react-dnd-tree';
+import { dropNodeReducer } from './reducers'
 
 // handle the action in your store reducer function
 case actions.DROP:
 	return dropNodeReducer(state, action);
+```
 
-// Pass the action reducer to the Tree component
-function drop(dragged, target, position) {
-	store.dispatch(actionCreators.createDropAction(dragged, target, position));
-}
-
+`reducers.js`
+```javascript
+import { reducers } from 'react-dnd-tree';
 
 // used in the dropNodeReducer to control the dropping behavior
 function canDrop(action) {
@@ -257,8 +330,6 @@ function canDrop(action) {
 	return true;
 }
 
-
-// Here you can control the dropping behaviour.
 function dropNodeReducer(state, action) {
 	if (!canDrop(action)) {
 		// If the dropping is not allowed you have to remove all hovering/dragging effects.
@@ -268,8 +339,55 @@ function dropNodeReducer(state, action) {
 	}
 	return state.set('tree', reducers.dropNode(state.get('tree'), action));
 }
+
+export dropNodeReducer;
 ```
 
+
+`yourComponent.js`
+```javascript
+import Tree, { actionCreators } from 'react-dnd-tree';
+import myStore from './store';
+
+// Pass the action reducer to the Tree component
+function drop(dragged, target, position) {
+	myStore.dispatch(actionCreators.createDropAction(dragged, target, position));
+}
+
+const component = (
+	<Tree
+		tree={tree}
+		drop={drop}
+		...
+	/>
+);
+
+```
+
+
+> When you don't have Redux or Redux like architecture.
+```javascript
+import Tree, { reducers, actionCreators } from 'react-dnd-tree';
+import { List } from 'immutable';
+
+let projectList = List.of(...); // define your Tree
+
+function drop(draggedNode) {
+	projectList = reducers.dropNode(projectList,
+		actionCreators.actionCreators.createDropAction(dragged, target, position));
+	// The projectList is now updated using the default dropNode reducer.
+	// In order to see the changes in the Tree component
+	// It should be re-rendered using the new projectList.
+}
+
+const component = (
+	<Tree
+		tree={tree}
+		drop={drop}
+		...
+	/>
+);
+```
 ###  stopHover
 > Function
 
@@ -279,23 +397,46 @@ function dropNodeReducer(state, action) {
 
 called when the node is still being dragged but not hovering on any other node.
 If you're using redux, you can dispatch a `STOP_HOVER` action and handle your store state using the ready made reducers.
+
+`store.js`
+
 ```javascript
 import Tree, { reducers, actions, actionCreators } from 'react-dnd-tree';
-
-const store = // define you store or import it.
+import { stopHoverReducer } from './reducers'
 
 // handle the action in your store reducer function
 case actions.STOP_HOVER:
 	return stopHoverReducer(state);
+```
 
-// Pass the action reducer to the Tree component
-function stopHover() {
-	store.dispatch(actionCreators.createStopHoverAction());
-}
+`reducers.js`
+```javascript
+import { reducers } from 'react-dnd-tree';
 
 function stopHoverReducer(state) {
 	return state.set('tree', reducers.stopHover(state.get('tree')));
 }
+export stopHoverReducer;
+```
+
+
+`yourComponent.js`
+```javascript
+import Tree, { actionCreators } from 'react-dnd-tree';
+import myStore from './store';
+
+// Pass the action reducer to the Tree component
+function stopHover() {
+	myStore.dispatch(actionCreators.createStopHoverAction());
+}
+
+const component = (
+	<Tree
+		tree={tree}
+		stopHover={stopHover}
+		...
+	/>
+);
 
 ```
 
