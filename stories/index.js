@@ -131,7 +131,7 @@ function hoverNodeReducer(state, action) {
 		return state.set('tree', treeCopy);
 	}
 	return state.set('tree',
-		reducers.setHoverEffects(state.get('tree'), action, canDrop));
+		reducers.setHoverEffects(state.get('tree'), action));
 }
 
 
